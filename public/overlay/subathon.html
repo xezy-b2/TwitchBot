@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Subathon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* --- Palette : livery British Racing Green sur noir --- */
+    --brg-deep: #012B18;      /* vert profond, ombres / fonds */
+    --brg: #01532B;           /* vert British Racing Green principal */
+    --brg-bright: #2E9A5C;    /* vert éclairci, accents actifs / glow */
+    --mint: #BFE3CE;          /* libellés discrets */
+    --ink: #08090A;           /* noir des boîtes (légèrement chaud) */
+    --track: #17201B;         /* fond des barres de progression */
+    --paper: #F3F5F1;         /* blanc cassé pour les chiffres */
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 380px;
+  }
+
+  /* ============ BLOC CHRONO ============ */
+  .timer-box {
+    position: relative;
+    background: var(--ink);
+    border: 2px solid var(--brg);
+    border-radius: 14px;
+    padding: 18px 22px 20px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(46, 154, 92, 0.15), 0 18px 40px rgba(0,0,0,0.55);
+  }
+
+  /* Filet de livrée façon course automobile, discret, en coin */
+  .timer-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 64px;
+    height: 100%;
+    background:
+      linear-gradient(90deg,
+        var(--brg-bright) 0px, var(--brg-bright) 3px,
+        transparent 3px, transparent 9px,
+        var(--paper) 9px, var(--paper) 11px,
+        transparent 11px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 6px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .timer-value {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--paper);
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 18px rgba(46, 154, 92, 0.35);
+    position: relative;
+    z-index: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-status {
+    margin-top: 8px;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brg-bright);
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+  .timer-status.paused { color: #8a8a8a; }
+
+  /* ============ BLOC OBJECTIFS ============ */
+  .goals-box {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.4);
+    border-radius: 14px;
+    padding: 16px 20px 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+
+  .goals-box .eyebrow { margin-bottom: 12px; }
+
+  .goal-row { margin-bottom: 14px; }
+  .goal-row:last-child { margin-bottom: 0; }
+
+  .goal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .goal-label {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--paper);
+    letter-spacing: 0.01em;
+  }
+
+  .goal-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--mint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .goal-track {
+    width: 100%;
+    height: 10px;
+    background: var(--track);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .goal-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brg-deep), var(--brg-bright));
+    border-radius: 6px;
+    transition: width 0.5s ease;
+  }
+
+  .goal-row.done .goal-label { color: var(--brg-bright); }
+  .goal-row.done .goal-fill { background: var(--brg-bright); box-shadow: 0 0 10px rgba(46,154,92,0.6); }
+  .goal-row.done .goal-top::after {
+    content: '✓';
+    color: var(--brg-bright);
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  .empty-hint {
+    font-size: 14px;
+    color: #777;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="timer-box">
+      <p class="eyebrow">Subathon</p>
+      <div class="timer-value" id="timerValue">00:00:00</div>
+      <p class="timer-status" id="timerStatus">En pause</p>
+    </div>
+
+    <div class="goals-box" id="goalsBox">
+      <p class="eyebrow">Objectifs</p>
+      <div id="goalsList"><p class="empty-hint">Aucun objectif défini.</p></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const timerValueEl = document.getElementById('timerValue');
+    const timerStatusEl = document.getElementById('timerStatus');
+    const goalsList = document.getElementById('goalsList');
+
+    let totals = { subs: 0, bits: 0 };
+    let goals = [];
+
+    function formatTime(total) {
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+    }
+
+    function renderGoals() {
+      if (goals.length === 0) {
+        goalsList.innerHTML = '<p class="empty-hint">Aucun objectif défini.</p>';
+        return;
+      }
+      goalsList.innerHTML = goals.map((g) => {
+        const current = g.type === 'subs' ? totals.subs : totals.bits;
+        const pct = Math.min(100, Math.round((current / g.target) * 100));
+        const done = current >= g.target;
+        const unit = g.type === 'subs' ? 'subs' : 'bits';
+        return `
+          <div class="goal-row ${done ? 'done' : ''}">
+            <div class="goal-top">
+              <span class="goal-label">${g.label}</span>
+              <span class="goal-count">${current}/${g.target} ${unit}</span>
+            </div>
+            <div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderTimer(secondsRemaining, isRunning) {
+      timerValueEl.textContent = formatTime(secondsRemaining);
+      timerStatusEl.textContent = isRunning ? '● En direct' : 'En pause';
+      timerStatusEl.classList.toggle('paused', !isRunning);
+    }
+
+    // --- Chargement initial (l'overlay n'a pas de session, on passe par l'API publique) ---
+    fetch('/public-api/subathon')
+      .then((res) => res.json())
+      .then((data) => {
+        totals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
+        goals = data.goals || [];
+        renderTimer(data.secondsRemaining, data.isRunning);
+        renderGoals();
+      })
+      .catch(() => {});
+
+    socket.on('subathon:update', (data) => {
+      totals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
+      renderTimer(data.secondsRemaining, data.isRunning);
+      renderGoals();
+    });
+
+    socket.on('subathon:goals', (data) => {
+      goals = data.goals || [];
+      renderGoals();
+    });
+  </script>
+</body>
+</html>

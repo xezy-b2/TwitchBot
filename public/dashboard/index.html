@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Bot Twitch</title>
+<link rel="stylesheet" href="/dashboard/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎮 Dashboard Bot Twitch</h1>
+    <div>
+      <button id="twitchConnectBtn" class="btn-twitch">Connecter Twitch</button>
+      <a href="/auth/logout" class="btn-logout">Déconnexion</a>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="commands">Commandes</button>
+    <button class="tab-btn" data-tab="points">Points & Gamble</button>
+    <button class="tab-btn" data-tab="alerts">Alertes</button>
+    <button class="tab-btn" data-tab="subathon">Subathon</button>
+    <button class="tab-btn" data-tab="leaderboard">Classement</button>
+    <button class="tab-btn" data-tab="overlays">Overlays (OBS)</button>
+  </nav>
+
+  <main>
+    <!-- === Commandes personnalisées === -->
+    <section id="tab-commands" class="tab-content active">
+      <h2>Commandes personnalisées</h2>
+      <form id="commandForm" class="card">
+        <input type="hidden" id="commandId" />
+        <input type="hidden" id="cmdSoundUrl" />
+        <div class="row">
+          <input id="cmdName" placeholder="nom (sans !)" required />
+          <select id="cmdLevel">
+            <option value="everyone">Tout le monde</option>
+            <option value="subscriber">Abonnés</option>
+            <option value="vip">VIP</option>
+            <option value="moderator">Modérateurs</option>
+            <option value="broadcaster">Broadcaster</option>
+          </select>
+          <input id="cmdCooldown" type="number" placeholder="Cooldown (s)" value="5" />
+          <input id="cmdRestrictedUser" placeholder="Restreindre à un pseudo (optionnel)" />
+        </div>
+        <div class="row">
+          <label>Type de réponse
+            <select id="cmdType">
+              <option value="text">Texte simple</option>
+              <option value="voice">Vocale (TTS)</option>
+              <option value="sound">Son (MP3 uploadé)</option>
+            </select>
+          </label>
+          <label id="cmdSoundWrapper" class="hidden">Fichier MP3
+            <input id="cmdSoundFile" type="file" accept="audio/*" />
+          </label>
+          <label id="cmdVolumeWrapper" class="hidden">Volume (<span id="cmdVolumeValue">100</span>%)
+            <input id="cmdVolume" type="range" min="0" max="100" value="100" />
+          </label>
+        </div>
+        <p id="cmdSoundCurrent" class="hint"></p>
+        <p class="hint">Laisse "Restreindre à un pseudo" vide pour que tout le monde (selon le niveau choisi) puisse utiliser la commande.</p>
+        <div id="cmdResponseWrapper">
+          <textarea id="cmdResponse" placeholder="Réponse... utilise {user} {channel} {args}"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit">💾 Enregistrer</button>
+          <button type="button" id="cmdCancelBtn" class="btn-secondary">Annuler</button>
+        </div>
+      </form>
+      <table class="data-table" id="commandsTable">
+        <thead><tr><th>Nom</th><th>Réponse</th><th>Niveau</th><th>Restreint à</th><th>Cooldown</th><th>Type</th><th>Actif</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- === Points & Gamble === -->
+    <section id="tab-points" class="tab-content">
+      <h2>Points & Gamble</h2>
+      <form id="settingsForm" class="card">
+        <label>Nom de la monnaie <input id="pointsName" /></label>
+        <label>Points gagnés passivement <input id="pointsPerInterval" type="number" /></label>
+        <label>Toutes les X minutes <input id="intervalMinutes" type="number" /></label>
+
+        <h3>Gamble (pari)</h3>
+        <label>Chance de gagner (%) — ex: 40 = ratio 60/40, 30 = ratio 70/30
+          <input id="gambleWinChance" type="number" min="1" max="99" />
+        </label>
+        <label>Mise minimum <input id="gambleMinBet" type="number" /></label>
+        <label>Cooldown gamble (s) <input id="gambleCooldown" type="number" /></label>
+
+        <button type="submit">💾 Enregistrer les réglages</button>
+      </form>
+    </section>
+
+    <!-- === Alertes === -->
+    <section id="tab-alerts" class="tab-content">
+      <h2>Alertes Follow / Sub</h2>
+      <form id="alertsForm" class="card">
+        <label>Message follow <input id="followMessage" /></label>
+        <label>Message sub <input id="subMessage" /></label>
+        <label>Message resub <input id="resubMessage" /></label>
+        <label>Message gift sub <input id="giftSubMessage" /></label>
+        <label>Message cheer/bits <input id="cheerMessage" /></label>
+        <label class="checkbox"><input id="soundEnabled" type="checkbox" /> Son activé sur l'overlay</label>
+        <button type="submit">💾 Enregistrer les alertes</button>
+      </form>
+      <p class="hint">Variables disponibles : {user} {tier} {months} {recipient} {bits}</p>
+    </section>
+
+    <!-- === Subathon === -->
+    <section id="tab-subathon" class="tab-content">
+      <h2>Subathon</h2>
+      <div class="card">
+        <div id="subathonDisplay" class="subathon-display">--:--:--</div>
+        <div class="row">
+          <button id="subathonStartBtn">▶️ Démarrer</button>
+          <button id="subathonPauseBtn">⏸️ Pause</button>
+          <button id="subathonResetBtn" class="btn-danger">🔄 Réinitialiser</button>
+        </div>
+        <div class="row">
+          <input id="addMinutesInput" type="number" placeholder="Minutes à ajouter" />
+          <button id="addMinutesBtn">➕ Ajouter du temps</button>
+        </div>
+      </div>
+      <form id="subathonConfigForm" class="card">
+        <h3>Configuration (temps ajouté automatiquement)</h3>
+        <label class="checkbox"><input id="subathonEnabled" type="checkbox" /> Activer le subathon automatique</label>
+        <label>Secondes / sub Tier 1 <input id="secondsPerSub" type="number" /></label>
+        <label>Secondes / sub Tier 2 <input id="secondsPerSubT2" type="number" /></label>
+        <label>Secondes / sub Tier 3 <input id="secondsPerSubT3" type="number" /></label>
+        <label>Secondes / sub cadeau <input id="secondsPerGiftSub" type="number" /></label>
+        <label>Secondes / 100 bits <input id="secondsPer100Bits" type="number" /></label>
+        <label>Durée max en secondes (0 = illimité) <input id="maxSeconds" type="number" /></label>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+
+      <div class="card">
+        <h3>🎯 Objectifs (affichés sur l'overlay)</h3>
+        <p class="hint">Cumul de subs ou de bits reçus PENDANT le subathon en cours. Ils se réinitialisent avec "Réinitialiser".</p>
+        <form id="goalForm" class="row">
+          <input id="goalLabel" placeholder="Nom de l'objectif (ex: Cosplay Mario)" required />
+          <select id="goalType">
+            <option value="subs">Subs cumulés</option>
+            <option value="bits">Bits cumulés</option>
+          </select>
+          <input id="goalTarget" type="number" min="1" placeholder="Objectif (ex: 50)" required />
+          <button type="submit">➕ Ajouter</button>
+        </form>
+        <table class="data-table" id="goalsTable">
+          <thead><tr><th>Objectif</th><th>Type</th><th>Cible</th><th>Progression</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- === Classement === -->
+    <section id="tab-leaderboard" class="tab-content">
+      <h2>Classement des points</h2>
+      <table class="data-table" id="leaderboardTable">
+        <thead><tr><th>#</th><th>Utilisateur</th><th>Points</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- === Overlays === -->
+    <section id="tab-overlays" class="tab-content">
+      <h2>Liens Overlays (à ajouter comme Browser Source dans OBS)</h2>
+      <ul class="overlay-links">
+        <li>🔔 Alertes follow/sub : <code id="overlayAlertsUrl"></code></li>
+        <li>⏱️ Subathon : <code id="overlaySubathonUrl"></code></li>
+        <li>🔊 Commandes vocales (TTS) : <code id="overlayTtsUrl"></code></li>
+      </ul>
+      <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/dashboard/js/dashboard.js"></script>
+</body>
+</html>
