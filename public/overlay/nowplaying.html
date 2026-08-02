@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Now Playing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --paper: #F3F5F1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 20px;
+  }
+  .box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 12px;
+    padding: 12px 20px 12px 12px;
+    width: fit-content;
+    max-width: 420px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+  .box.show { opacity: 1; transform: translateY(0); }
+
+  .art {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--brg-deep);
+    flex-shrink: 0;
+  }
+  .eyebrow {
+    margin: 0 0 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mint);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brg-bright);
+    box-shadow: 0 0 8px var(--brg-bright);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--paper);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+  .artist {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--mint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+</style>
+</head>
+<body>
+  <div class="box" id="box">
+    <img class="art" id="art" src="" alt="" />
+    <div>
+      <p class="eyebrow"><span class="dot"></span> En écoute</p>
+      <div class="title" id="title">—</div>
+      <div class="artist" id="artist">—</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const box = document.getElementById('box');
+    const art = document.getElementById('art');
+    const titleEl = document.getElementById('title');
+    const artistEl = document.getElementById('artist');
+
+    function render(data) {
+      if (!data || !data.isPlaying) {
+        box.classList.remove('show');
+        return;
+      }
+      titleEl.textContent = data.title || '—';
+      artistEl.textContent = data.artist || '—';
+      if (data.albumArt) art.src = data.albumArt;
+      box.classList.add('show');
+    }
+
+    fetch('/public-api/nowplaying')
+      .then((res) => res.json())
+      .then(render)
+      .catch(() => {});
+
+    socket.on('nowplaying:update', render);
+  </script>
+</body>
+</html>

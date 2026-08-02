@@ -20,12 +20,19 @@ const settingsSchema = new mongoose.Schema({
 
   // --- Alertes follow / sub ---
   alerts: {
-    followMessage: { type: String, default: '🎉 {user} vient de follow la chaîne !' },
+    followMessage: { type: String, default: '🎉 {user} vient de follow la chaîne ! Nous sommes désormais {totalFollowers} follows (+{followsThisStream} pendant ce live) !' },
     subMessage: { type: String, default: '⭐ {user} vient de s\'abonner (Tier {tier}) !' },
     resubMessage: { type: String, default: '⭐ {user} est abonné depuis {months} mois !' },
     giftSubMessage: { type: String, default: '🎁 {user} a offert un sub à {recipient} !' },
     cheerMessage: { type: String, default: '💎 {user} a envoyé {bits} bits !' },
-    soundEnabled: { type: Boolean, default: true }
+    soundEnabled: { type: Boolean, default: true },
+    soundVolume: { type: Number, default: 100, min: 0, max: 100 },
+    // Son personnalisé (MP3) joué sur l'overlay pour chaque type d'alerte, en plus du texte
+    followSoundUrl: { type: String, default: null },
+    subSoundUrl: { type: String, default: null },
+    resubSoundUrl: { type: String, default: null },
+    giftSubSoundUrl: { type: String, default: null },
+    cheerSoundUrl: { type: String, default: null }
   },
 
   // --- Subathon ---

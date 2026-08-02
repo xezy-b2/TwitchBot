@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Dernier Follow / Sub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --paper: #F3F5F1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+  .box {
+    position: relative;
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.45);
+    min-width: 320px;
+  }
+  .box .icon { font-size: 28px; }
+  .eyebrow {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mint);
+  }
+  .value {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--paper);
+    text-shadow: 0 0 12px rgba(46, 154, 92, 0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon">🎉</div>
+    <div>
+      <p class="eyebrow">Dernier follower</p>
+      <div class="value" id="lastFollower">—</div>
+    </div>
+  </div>
+  <div class="box">
+    <div class="icon">⭐</div>
+    <div>
+      <p class="eyebrow">Dernier sub</p>
+      <div class="value" id="lastSub">—</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const lastFollowerEl = document.getElementById('lastFollower');
+    const lastSubEl = document.getElementById('lastSub');
+
+    fetch('/public-api/lastevents')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.lastFollowerName) lastFollowerEl.textContent = data.lastFollowerName;
+        if (data.lastSubName) lastSubEl.textContent = data.lastSubName;
+      })
+      .catch(() => {});
+
+    socket.on('lastevents:update', (data) => {
+      if (data.lastFollowerName) lastFollowerEl.textContent = data.lastFollowerName;
+      if (data.lastSubName) lastSubEl.textContent = data.lastSubName;
+    });
+  </script>
+</body>
+</html>

@@ -19,8 +19,8 @@ function createApp() {
 
   // Overlays (OBS Browser Source) : accès public, pas d'auth nécessaire
   app.use('/overlay', express.static(path.join(__dirname, '../../public/overlay')));
-  // Fichiers audio uploadés (soundboard) : accès public, lus directement par l'overlay
-  app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
+  // Fichiers son du soundboard : stockés en MongoDB (persistant), servis publiquement
+  app.use('/sound-files', require('./routes/soundFiles'));
   // API publique (sans auth) : utilisée par l'overlay OBS pour son état initial
   app.use('/public-api', require('./routes/publicApi'));
 
@@ -38,6 +38,12 @@ function createApp() {
   app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/dashboard/login.html'));
   });
+
+  // CSS/JS du dashboard : accès public, nécessaire car la page de login
+  // (non authentifiée) les charge aussi. Doit être déclaré AVANT le
+  // middleware protégé ci-dessous pour être prioritaire sur ces chemins.
+  app.use('/dashboard/css', express.static(path.join(__dirname, '../../public/dashboard/css')));
+  app.use('/dashboard/js', express.static(path.join(__dirname, '../../public/dashboard/js')));
 
   app.use('/dashboard', requireAuth, express.static(path.join(__dirname, '../../public/dashboard')));
   app.use('/api', requireAuth, require('./routes/api'));

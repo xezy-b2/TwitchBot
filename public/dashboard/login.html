@@ -2,16 +2,37 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Connexion — Dashboard Bot Twitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/dashboard/css/style.css" />
 </head>
 <body class="login-body">
-  <div class="login-box">
-    <h1>🎮 Dashboard Bot Twitch</h1>
-    <input id="password" type="password" placeholder="Mot de passe" />
-    <button id="loginBtn">Se connecter</button>
-    <p id="error" class="error"></p>
-  </div>
+
+  <section class="login-hero">
+    <p class="hero-status"><span class="dot"></span> Bot en ligne</p>
+    <h1 class="hero-title">Bot <span>Twitch</span><br />Dashboard</h1>
+    <p class="hero-tagline">Pilote ta chaîne en un seul endroit : commandes, points, subathon et alertes en direct.</p>
+    <ul class="hero-features">
+      <li>Points &amp; Gamble configurables</li>
+      <li>Alertes follow / sub / cheer en direct</li>
+      <li>Subathon avec objectifs</li>
+      <li>Commandes vocales &amp; soundboard</li>
+    </ul>
+  </section>
+
+  <section class="login-panel">
+    <div class="login-box">
+      <p class="login-eyebrow">Accès restreint</p>
+      <h2>Se connecter</h2>
+      <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" />
+      <button id="loginBtn">Entrer</button>
+      <p id="error" class="error"></p>
+    </div>
+  </section>
+
   <script>
     async function tryLogin() {
       const password = document.getElementById('password').value;

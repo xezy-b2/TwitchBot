@@ -148,7 +148,9 @@ async function getChannelFollowers(channel, broadcasterId, first = 20) {
     headers: helixHeaders(userToken),
     params: { broadcaster_id: broadcasterId, first }
   });
-  return data.data; // [{ user_id, user_login, user_name, followed_at }, ...] triés du plus récent au plus ancien
+  // data.data : [{ user_id, user_login, user_name, followed_at }, ...] triés du plus récent au plus ancien
+  // data.total : nombre total de followers de la chaîne
+  return { followers: data.data, total: data.total };
 }
 
 module.exports = {

@@ -5,9 +5,10 @@ const POLL_INTERVAL_MS = 30 * 1000; // toutes les 30 secondes
 
 /**
  * Vérifie périodiquement la liste des abonnés (followers) de la chaîne et
- * appelle onNewFollow({ user }) pour chaque nouveau follow détecté depuis le
- * dernier check. Beaucoup plus fiable que l'événement EventSub "channel.follow",
- * qui est connu pour ne pas toujours être délivré par Twitch en temps réel.
+ * appelle onNewFollow({ user, totalFollowers, followsThisStream }) pour chaque
+ * nouveau follow détecté depuis le dernier check. Beaucoup plus fiable que
+ * l'événement EventSub "channel.follow", qui est connu pour ne pas toujours
+ * être délivré par Twitch en temps réel.
  */
 const activeIntervals = new Map(); // channel -> intervalId, pour éviter les doublons
 
@@ -26,9 +27,9 @@ async function startFollowPolling(channel, broadcasterId, onNewFollow) {
   // Premier lancement : on prend une photo de référence sans déclencher d'alertes,
   // pour ne pas annoncer tous les followers existants au premier démarrage.
   if (!state.initialized) {
-    const followers = await getChannelFollowers(channel, broadcasterId, 1);
-    if (followers && followers.length > 0) {
-      state.lastFollowedAt = new Date(followers[0].followed_at);
+    const result = await getChannelFollowers(channel, broadcasterId, 1);
+    if (result && result.followers.length > 0) {
+      state.lastFollowedAt = new Date(result.followers[0].followed_at);
     } else {
       state.lastFollowedAt = new Date(0);
     }
@@ -39,8 +40,9 @@ async function startFollowPolling(channel, broadcasterId, onNewFollow) {
 
   const intervalId = setInterval(async () => {
     try {
-      const followers = await getChannelFollowers(channel, broadcasterId, 20);
-      if (!followers) return; // pas de token Twitch connecté
+      const result = await getChannelFollowers(channel, broadcasterId, 20);
+      if (!result) return; // pas de token Twitch connecté
+      const { followers, total } = result;
 
       const lastKnown = state.lastFollowedAt ? state.lastFollowedAt.getTime() : 0;
       // La liste est triée du plus récent au plus ancien : on prend les nouveaux
@@ -49,7 +51,11 @@ async function startFollowPolling(channel, broadcasterId, onNewFollow) {
       if (newOnes.length === 0) return;
 
       // Du plus ancien au plus récent pour annoncer dans le bon ordre
-      newOnes.reverse().forEach((f) => onNewFollow({ user: f.user_name }));
+      const ordered = [...newOnes].reverse();
+      for (const f of ordered) {
+        state.followsThisStream += 1;
+        onNewFollow({ user: f.user_name, totalFollowers: total, followsThisStream: state.followsThisStream });
+      }
 
       const newest = newOnes[newOnes.length - 1];
       state.lastFollowedAt = new Date(newest.followed_at);
@@ -62,4 +68,11 @@ async function startFollowPolling(channel, broadcasterId, onNewFollow) {
   activeIntervals.set(channel, intervalId);
 }
 
-module.exports = { startFollowPolling };
+/** Remet à zéro le compteur "follows pendant ce live" (à appeler quand un nouveau live démarre). */
+async function resetStreamFollowCounter(channel) {
+  channel = channel.toLowerCase();
+  await FollowState.findOneAndUpdate({ channel }, { followsThisStream: 0 }, { upsert: true });
+  console.log(`[FollowPoller] Compteur "follows pendant ce live" remis à zéro pour ${channel}.`);
+}
+
+module.exports = { startFollowPolling, resetStreamFollowCounter };

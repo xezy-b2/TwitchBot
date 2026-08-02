@@ -14,20 +14,63 @@ document.getElementById('twitchConnectBtn').addEventListener('click', () => {
   window.location.href = '/auth/twitch';
 });
 
+document.getElementById('spotifyConnectBtn').addEventListener('click', () => {
+  window.location.href = '/auth/spotify';
+});
+
 // --- Affiche/masque le champ upload MP3 et le champ Réponse selon le type de réponse choisi ---
 const cmdTypeSelect = document.getElementById('cmdType');
 const cmdSoundWrapper = document.getElementById('cmdSoundWrapper');
 const cmdVolumeWrapper = document.getElementById('cmdVolumeWrapper');
+const cmdSoundListWrapper = document.getElementById('cmdSoundListWrapper');
 const cmdResponseWrapper = document.getElementById('cmdResponseWrapper');
 cmdTypeSelect.addEventListener('change', () => {
   const isSound = cmdTypeSelect.value === 'sound';
   cmdSoundWrapper.classList.toggle('hidden', !isSound);
   cmdVolumeWrapper.classList.toggle('hidden', !isSound);
+  cmdSoundListWrapper.classList.toggle('hidden', !isSound);
   cmdResponseWrapper.classList.toggle('hidden', isSound);
 });
 
 document.getElementById('cmdVolume').addEventListener('input', (e) => {
   document.getElementById('cmdVolumeValue').textContent = e.target.value;
+});
+
+// ============ SONS MULTIPLES (soundboard aléatoire) ============
+let currentSoundUrls = [];
+
+function renderSoundList() {
+  const list = document.getElementById('cmdSoundList');
+  list.innerHTML = '';
+  currentSoundUrls.forEach((url, index) => {
+    const li = document.createElement('li');
+    const shortName = url.split('/').pop();
+    li.innerHTML = `<span>🎵 ${shortName}</span><button type="button" data-remove="${index}" class="btn-danger">✕</button>`;
+    list.appendChild(li);
+    li.querySelector('[data-remove]').addEventListener('click', () => {
+      currentSoundUrls.splice(index, 1);
+      renderSoundList();
+    });
+  });
+}
+
+document.getElementById('cmdSoundFile').addEventListener('change', async (e) => {
+  const files = [...e.target.files];
+  if (files.length === 0) return;
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('sound', file);
+    const uploadRes = await fetch('/api/sounds/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadRes.ok) {
+      alert(`Erreur upload "${file.name}" : ${uploadData.error}`);
+      continue;
+    }
+    currentSoundUrls.push(uploadData.url);
+  }
+  renderSoundList();
+  e.target.value = ''; // permet de re-sélectionner les mêmes fichiers si besoin
 });
 
 // ============ COMMANDES ============
@@ -37,7 +80,10 @@ async function loadCommands() {
   const tbody = document.querySelector('#commandsTable tbody');
   tbody.innerHTML = '';
   commands.forEach((cmd) => {
-    const typeIcon = cmd.soundUrl ? `🎵 Son (${cmd.volume ?? 100}%)` : cmd.isVoice ? '🔊 TTS' : '—';
+    const soundCount = cmd.soundUrls?.length || (cmd.soundUrl ? 1 : 0);
+    const typeIcon = soundCount > 0
+      ? `🎵 Son (${soundCount} son${soundCount > 1 ? 's' : ''}, ${cmd.volume ?? 100}%)`
+      : cmd.isVoice ? '🔊 TTS' : '—';
     const restrictedLabel = cmd.restrictedToUser ? `@${cmd.restrictedToUser}` : '—';
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -61,18 +107,18 @@ async function loadCommands() {
       document.getElementById('cmdLevel').value = cmd.userLevel;
       document.getElementById('cmdCooldown').value = cmd.cooldown;
       document.getElementById('cmdRestrictedUser').value = cmd.restrictedToUser || '';
-      document.getElementById('cmdSoundUrl').value = cmd.soundUrl || '';
 
-      const type = cmd.soundUrl ? 'sound' : cmd.isVoice ? 'voice' : 'text';
+      currentSoundUrls = cmd.soundUrls?.length > 0 ? [...cmd.soundUrls] : (cmd.soundUrl ? [cmd.soundUrl] : []);
+      renderSoundList();
+
+      const type = currentSoundUrls.length > 0 ? 'sound' : cmd.isVoice ? 'voice' : 'text';
       cmdTypeSelect.value = type;
       cmdSoundWrapper.classList.toggle('hidden', type !== 'sound');
       cmdVolumeWrapper.classList.toggle('hidden', type !== 'sound');
+      cmdSoundListWrapper.classList.toggle('hidden', type !== 'sound');
       cmdResponseWrapper.classList.toggle('hidden', type === 'sound');
       document.getElementById('cmdVolume').value = cmd.volume ?? 100;
       document.getElementById('cmdVolumeValue').textContent = cmd.volume ?? 100;
-      document.getElementById('cmdSoundCurrent').textContent = cmd.soundUrl
-        ? `Son actuel : ${cmd.soundUrl} (choisis un fichier pour le remplacer)`
-        : '';
     });
     tr.querySelector('[data-del]').addEventListener('click', async () => {
       await fetch(`/api/commands/${cmd._id}`, { method: 'DELETE' });
@@ -85,7 +131,6 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const type = cmdTypeSelect.value;
-  let soundUrl = document.getElementById('cmdSoundUrl').value || null;
   const responseText = document.getElementById('cmdResponse').value;
 
   if (type !== 'sound' && !responseText) {
@@ -93,25 +138,9 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  if (type === 'sound') {
-    const file = document.getElementById('cmdSoundFile').files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('sound', file);
-      const uploadRes = await fetch('/api/sounds/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) {
-        alert(`Erreur upload : ${uploadData.error}`);
-        return;
-      }
-      soundUrl = uploadData.url;
-    }
-    if (!soundUrl) {
-      alert('Choisis un fichier MP3 pour une commande de type "Son".');
-      return;
-    }
-  } else {
-    soundUrl = null;
+  if (type === 'sound' && currentSoundUrls.length === 0) {
+    alert('Ajoute au moins un fichier MP3 pour une commande de type "Son".');
+    return;
   }
 
   const payload = {
@@ -120,7 +149,7 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
     userLevel: document.getElementById('cmdLevel').value,
     cooldown: parseInt(document.getElementById('cmdCooldown').value, 10),
     isVoice: type === 'voice',
-    soundUrl,
+    soundUrls: type === 'sound' ? currentSoundUrls : [],
     volume: parseInt(document.getElementById('cmdVolume').value, 10),
     restrictedToUser: document.getElementById('cmdRestrictedUser').value.trim() || null
   };
@@ -131,13 +160,14 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
   });
   e.target.reset();
   document.getElementById('commandId').value = '';
-  document.getElementById('cmdSoundUrl').value = '';
-  document.getElementById('cmdSoundCurrent').textContent = '';
+  currentSoundUrls = [];
+  renderSoundList();
   document.getElementById('cmdVolume').value = 100;
   document.getElementById('cmdVolumeValue').textContent = '100';
   document.getElementById('cmdRestrictedUser').value = '';
   cmdSoundWrapper.classList.add('hidden');
   cmdVolumeWrapper.classList.add('hidden');
+  cmdSoundListWrapper.classList.add('hidden');
   cmdResponseWrapper.classList.remove('hidden');
   loadCommands();
 });
@@ -145,17 +175,58 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
 document.getElementById('cmdCancelBtn').addEventListener('click', () => {
   document.getElementById('commandForm').reset();
   document.getElementById('commandId').value = '';
-  document.getElementById('cmdSoundUrl').value = '';
-  document.getElementById('cmdSoundCurrent').textContent = '';
+  currentSoundUrls = [];
+  renderSoundList();
   document.getElementById('cmdVolume').value = 100;
   document.getElementById('cmdVolumeValue').textContent = '100';
   document.getElementById('cmdRestrictedUser').value = '';
   cmdSoundWrapper.classList.add('hidden');
   cmdVolumeWrapper.classList.add('hidden');
+  cmdSoundListWrapper.classList.add('hidden');
   cmdResponseWrapper.classList.remove('hidden');
 });
 
 // ============ SETTINGS (points/gamble) ============
+let alertSoundUrls = { follow: null, sub: null, resub: null, giftsub: null, cheer: null };
+
+function renderAlertSoundRow(type) {
+  const row = document.querySelector(`.sound-row[data-alert-type="${type}"]`);
+  const currentEl = row.querySelector('.alert-sound-current');
+  const removeBtn = row.querySelector('.alert-sound-remove');
+  const url = alertSoundUrls[type];
+  currentEl.textContent = url ? `🎵 ${url.split('/').pop()}` : 'Aucun son attaché';
+  removeBtn.classList.toggle('hidden', !url);
+}
+
+document.querySelectorAll('.sound-row').forEach((row) => {
+  const type = row.dataset.alertType;
+
+  row.querySelector('.alert-sound-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('sound', file);
+    const uploadRes = await fetch('/api/sounds/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadRes.ok) {
+      alert(`Erreur upload : ${uploadData.error}`);
+      return;
+    }
+    alertSoundUrls[type] = uploadData.url;
+    renderAlertSoundRow(type);
+    e.target.value = '';
+  });
+
+  row.querySelector('.alert-sound-remove').addEventListener('click', () => {
+    alertSoundUrls[type] = null;
+    renderAlertSoundRow(type);
+  });
+});
+
+document.getElementById('alertVolume').addEventListener('input', (e) => {
+  document.getElementById('alertVolumeValue').textContent = e.target.value;
+});
+
 async function loadSettings() {
   const res = await fetch('/api/settings');
   const s = await res.json();
@@ -173,6 +244,17 @@ async function loadSettings() {
   document.getElementById('giftSubMessage').value = s.alerts.giftSubMessage;
   document.getElementById('cheerMessage').value = s.alerts.cheerMessage;
   document.getElementById('soundEnabled').checked = s.alerts.soundEnabled;
+  document.getElementById('alertVolume').value = s.alerts.soundVolume ?? 100;
+  document.getElementById('alertVolumeValue').textContent = s.alerts.soundVolume ?? 100;
+
+  alertSoundUrls = {
+    follow: s.alerts.followSoundUrl || null,
+    sub: s.alerts.subSoundUrl || null,
+    resub: s.alerts.resubSoundUrl || null,
+    giftsub: s.alerts.giftSubSoundUrl || null,
+    cheer: s.alerts.cheerSoundUrl || null
+  };
+  Object.keys(alertSoundUrls).forEach(renderAlertSoundRow);
 
   document.getElementById('subathonEnabled').checked = s.subathon.enabled;
   document.getElementById('secondsPerSub').value = s.subathon.secondsPerSub;
@@ -214,7 +296,13 @@ document.getElementById('alertsForm').addEventListener('submit', async (e) => {
         resubMessage: document.getElementById('resubMessage').value,
         giftSubMessage: document.getElementById('giftSubMessage').value,
         cheerMessage: document.getElementById('cheerMessage').value,
-        soundEnabled: document.getElementById('soundEnabled').checked
+        soundEnabled: document.getElementById('soundEnabled').checked,
+        soundVolume: parseInt(document.getElementById('alertVolume').value, 10),
+        followSoundUrl: alertSoundUrls.follow,
+        subSoundUrl: alertSoundUrls.sub,
+        resubSoundUrl: alertSoundUrls.resub,
+        giftSubSoundUrl: alertSoundUrls.giftsub,
+        cheerSoundUrl: alertSoundUrls.cheer
       }
     })
   });
@@ -355,6 +443,96 @@ function setupOverlayLinks() {
   document.getElementById('overlayAlertsUrl').textContent = `${base}/overlay/alerts.html`;
   document.getElementById('overlaySubathonUrl').textContent = `${base}/overlay/subathon.html`;
   document.getElementById('overlayTtsUrl').textContent = `${base}/overlay/tts.html`;
+  document.getElementById('overlayLastEventsUrl').textContent = `${base}/overlay/lastevents.html`;
+  document.getElementById('overlayGoalUrl').textContent = `${base}/overlay/goal.html`;
+  document.getElementById('overlayNowPlayingUrl').textContent = `${base}/overlay/nowplaying.html`;
+}
+
+// ============ MESSAGES AUTOMATIQUES ============
+async function loadAutoMessages() {
+  const res = await fetch('/api/automessages');
+  const messages = await res.json();
+  const tbody = document.querySelector('#autoMessagesTable tbody');
+  tbody.innerHTML = '';
+  messages.forEach((msg) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${msg.text}</td>
+      <td>${msg.intervalMinutes} min</td>
+      <td><input type="checkbox" ${msg.enabled ? 'checked' : ''} data-toggle="${msg._id}" /></td>
+      <td><button data-del-auto="${msg._id}" class="btn-danger">🗑️</button></td>`;
+    tbody.appendChild(tr);
+
+    tr.querySelector('[data-toggle]').addEventListener('change', async (e) => {
+      await fetch(`/api/automessages/${msg._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: e.target.checked })
+      });
+    });
+    tr.querySelector('[data-del-auto]').addEventListener('click', async () => {
+      await fetch(`/api/automessages/${msg._id}`, { method: 'DELETE' });
+      loadAutoMessages();
+    });
+  });
+}
+
+document.getElementById('autoMessageForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await fetch('/api/automessages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: document.getElementById('autoMessageText').value,
+      intervalMinutes: parseInt(document.getElementById('autoMessageInterval').value, 10)
+    })
+  });
+  e.target.reset();
+  document.getElementById('autoMessageInterval').value = 30;
+  loadAutoMessages();
+});
+
+// ============ OBJECTIF LONG TERME ============
+async function loadLongTermGoal() {
+  const res = await fetch('/api/longtermgoal');
+  const goal = await res.json();
+  document.getElementById('ltgLabel').value = goal.label;
+  document.getElementById('ltgType').value = goal.type;
+  document.getElementById('ltgTarget').value = goal.target;
+  document.getElementById('ltgCurrentDisplay').textContent = `${goal.current} / ${goal.target}`;
+  document.getElementById('ltgCurrentInput').value = goal.current;
+}
+
+document.getElementById('longTermGoalForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await fetch('/api/longtermgoal', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      label: document.getElementById('ltgLabel').value,
+      type: document.getElementById('ltgType').value,
+      target: parseInt(document.getElementById('ltgTarget').value, 10)
+    })
+  });
+  loadLongTermGoal();
+});
+
+document.getElementById('ltgCurrentSaveBtn').addEventListener('click', async () => {
+  await fetch('/api/longtermgoal/current', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current: parseInt(document.getElementById('ltgCurrentInput').value, 10) })
+  });
+  loadLongTermGoal();
+});
+
+// ============ SPOTIFY ============
+async function loadSpotifyStatus() {
+  const res = await fetch('/api/spotify/status');
+  const data = await res.json();
+  document.getElementById('spotifyStatus').textContent = data.connected
+    ? '✅ Compte Spotify connecté'
+    : '⛔ Aucun compte Spotify connecté';
 }
 
 // --- Init ---
@@ -363,5 +541,8 @@ loadSettings();
 loadSubathon();
 loadGoals();
 loadLeaderboard();
+loadAutoMessages();
+loadLongTermGoal();
+loadSpotifyStatus();
 setupOverlayLinks();
 setInterval(loadLeaderboard, 30000);

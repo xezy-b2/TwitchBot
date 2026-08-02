@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const axios = require('axios');
-const TwitchToken = require('../models/TwitchToken');
 const { getUserAccessToken } = require('./helixClient');
 
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
@@ -8,7 +7,7 @@ const EVENTSUB_WS_URL = 'wss://eventsub.wss.twitch.tv/ws';
 
 /**
  * Ouvre une connexion EventSub WebSocket pour la chaîne donnée et s'abonne
- * aux événements follow / subscribe / resub / gift sub / cheer.
+ * aux événements subscribe / resub / gift sub / cheer.
  * Pas besoin d'URL publique ni de certificat : parfait pour un VPS.
  *
  * onEvent(type, payload) est appelé pour chaque notification reçue.
@@ -28,7 +27,6 @@ async function startEventSub(channel, broadcasterId, onEvent) {
     ws.on('message', async (raw) => {
       const msg = JSON.parse(raw.toString());
       const type = msg.metadata?.message_type;
-      console.log('[EventSub][DEBUG] Message reçu, type =', type); // ligne temporaire de debug
 
       if (type === 'session_welcome') {
         const sessionId = msg.payload.session.id;
@@ -153,6 +151,11 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
       type: 'channel.cheer',
       version: '1',
       condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'stream.online', // utilisé pour remettre à zéro le compteur "follows pendant ce live"
+      version: '1',
+      condition: { broadcaster_user_id: broadcasterId }
     }
   ];
 
@@ -184,12 +187,8 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
 function handleNotification(payload, onEvent) {
   const type = payload.subscription.type;
   const ev = payload.event;
-  console.log('[EventSub][DEBUG] Notification reçue :', type, JSON.stringify(ev)); // ligne temporaire de debug
 
   switch (type) {
-    case 'channel.follow':
-      onEvent('follow', { user: ev.user_name });
-      break;
     case 'channel.subscribe':
       onEvent('sub', { user: ev.user_name, tier: (ev.tier / 1000).toString() });
       break;
@@ -212,6 +211,9 @@ function handleNotification(payload, onEvent) {
         user: ev.is_anonymous ? 'Anonyme' : ev.user_name,
         bits: ev.bits
       });
+      break;
+    case 'stream.online':
+      onEvent('streamonline', {});
       break;
   }
 }

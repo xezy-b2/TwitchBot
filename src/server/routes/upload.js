@@ -1,22 +1,15 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const router = express.Router();
+const SoundFile = require('../../models/SoundFile');
 
-const SOUNDS_DIR = path.join(__dirname, '../../../public/uploads/sounds');
-fs.mkdirSync(SOUNDS_DIR, { recursive: true });
+const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, SOUNDS_DIR),
-  filename: (req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, `${Date.now()}-${safeName}`);
-  }
-});
-
+// Stockage en mémoire (pas sur disque) : le fichier est ensuite sauvegardé
+// directement dans MongoDB, qui persiste correctement même sur un hébergeur
+// comme Render où le disque du service est effacé à chaque redéploiement.
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 Mo max
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('audio/')) {
@@ -27,10 +20,17 @@ const upload = multer({
 });
 
 router.post('/sounds/upload', (req, res) => {
-  upload.single('sound')(req, res, (err) => {
+  upload.single('sound')(req, res, async (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu.' });
-    res.json({ url: `/uploads/sounds/${req.file.filename}` });
+
+    const soundFile = await SoundFile.create({
+      channel: CHANNEL,
+      mimeType: req.file.mimetype,
+      data: req.file.buffer
+    });
+
+    res.json({ url: `/sound-files/${soundFile._id}` });
   });
 });
 

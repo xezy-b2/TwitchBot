@@ -3,6 +3,7 @@ const { grantPassivePoints } = require('../points/pointsManager');
 const Settings = require('../models/Settings');
 
 const activeChatters = new Set();
+let lastChatActivityAt = 0;
 
 function createBotClient() {
   const client = new tmi.Client({
@@ -56,10 +57,22 @@ function trackChatter(username) {
   activeChatters.add(username.toLowerCase());
 }
 
+/** Marque le chat comme actif à l'instant présent (appelé à chaque message reçu). */
+function markChatActivity() {
+  lastChatActivityAt = Date.now();
+}
+
+/** Le chat est considéré "actif" si un message a été envoyé dans les X dernières minutes. */
+function isChatActive(withinMinutes = 10) {
+  return Date.now() - lastChatActivityAt < withinMinutes * 60 * 1000;
+}
+
 module.exports = {
   createBotClient,
   getUserLevel,
   hasPermission,
   startPassivePointsLoop,
-  trackChatter
+  trackChatter,
+  markChatActivity,
+  isChatActive
 };

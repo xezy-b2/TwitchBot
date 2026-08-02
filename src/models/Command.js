@@ -12,7 +12,8 @@ const commandSchema = new mongoose.Schema({
   },
   enabled: { type: Boolean, default: true },
   isVoice: { type: Boolean, default: false }, // commande vocale (TTS) ou non
-  soundUrl: { type: String, default: null }, // MP3 associé (soundboard), joué sur l'overlay
+  soundUrl: { type: String, default: null }, // legacy (une seule commande son) — conservé pour compatibilité
+  soundUrls: { type: [String], default: [] }, // plusieurs sons possibles : un est choisi aléatoirement à chaque déclenchement
   volume: { type: Number, default: 100, min: 0, max: 100 }, // volume du son (0-100), utile pour les commandes de type Son
   restrictedToUser: { type: String, default: null, lowercase: true }, // si défini, seul ce pseudo peut utiliser la commande
   createdAt: { type: Date, default: Date.now }

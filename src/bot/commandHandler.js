@@ -1,7 +1,7 @@
 const Settings = require('../models/Settings');
 const Command = require('../models/Command');
 const builtins = require('./builtinCommands');
-const { getUserLevel, hasPermission, trackChatter } = require('./client');
+const { getUserLevel, hasPermission, trackChatter, markChatActivity } = require('./client');
 const { sendTTS, sendAlert, sendSound } = require('../sockets/io');
 
 const cooldowns = new Map(); // clé: "channel:command:username" -> timestamp
@@ -35,6 +35,7 @@ function attachHandlers(client, io, broadcasterId) {
     if (self) return;
     const channel = channelRaw.replace('#', '').toLowerCase();
     trackChatter(tags.username);
+    markChatActivity();
 
     const settings = await getSettings(channel);
     const prefix = settings.prefix || '!';
@@ -74,9 +75,16 @@ function attachHandlers(client, io, broadcasterId) {
 
       const text = fillPlaceholders(custom.response, ctx);
 
-      if (custom.soundUrl) {
+      // Plusieurs sons possibles ? On en choisit un au hasard. Repli sur l'ancien
+      // champ soundUrl (une seule commande son) pour les commandes créées avant cet ajout.
+      const soundList = custom.soundUrls?.length > 0
+        ? custom.soundUrls
+        : (custom.soundUrl ? [custom.soundUrl] : []);
+
+      if (soundList.length > 0) {
+        const chosenSound = soundList[Math.floor(Math.random() * soundList.length)];
         // Soundboard : joue le MP3 associé sur l'overlay, sans message dans le chat
-        sendSound(io, custom.soundUrl, custom.volume);
+        sendSound(io, chosenSound, custom.volume);
       } else if (custom.isVoice) {
         // Commande vocale : lue par l'overlay TTS, sans message dans le chat
         sendTTS(io, text);

@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const TwitchToken = require('../../models/TwitchToken');
+const SpotifyToken = require('../../models/SpotifyToken');
 
 const SCOPES = [
   'moderator:read:followers',
@@ -9,6 +10,8 @@ const SCOPES = [
   'channel:manage:broadcast',
   'bits:read'
 ].join(' ');
+
+const SPOTIFY_SCOPES = 'user-read-currently-playing user-read-playback-state';
 
 // --- Login simple au dashboard (mot de passe défini dans .env) ---
 router.post('/login', (req, res) => {
@@ -86,6 +89,57 @@ router.get('/twitch/callback', async (req, res) => {
   } catch (err) {
     console.error('[OAuth Twitch] Erreur :', err.response?.data || err.message);
     res.status(500).send('Erreur lors de la connexion à Twitch.');
+  }
+});
+
+// --- OAuth Spotify : nécessaire pour l'overlay "Now Playing" ---
+router.get('/spotify', (req, res) => {
+  const params = new URLSearchParams({
+    client_id: process.env.SPOTIFY_CLIENT_ID,
+    redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
+    response_type: 'code',
+    scope: SPOTIFY_SCOPES
+  });
+  res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
+});
+
+router.get('/spotify/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send('Code OAuth Spotify manquant.');
+
+  try {
+    const basicAuth = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64');
+    const { data: tokenData } = await axios.post(
+      'https://accounts.spotify.com/api/token',
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: process.env.SPOTIFY_REDIRECT_URI
+      }),
+      { headers: { Authorization: `Basic ${basicAuth}`, 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+
+    const channel = process.env.TWITCH_CHANNEL.toLowerCase();
+
+    await SpotifyToken.findOneAndUpdate(
+      { channel },
+      {
+        channel,
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token,
+        expiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
+      },
+      { upsert: true }
+    );
+
+    if (req.app.locals.onSpotifyConnected) {
+      await req.app.locals.onSpotifyConnected();
+    }
+
+    res.redirect('/dashboard?spotify=connected');
+  } catch (err) {
+    console.error('[OAuth Spotify] Erreur :', err.response?.data || err.message);
+    res.status(500).send('Erreur lors de la connexion à Spotify.');
   }
 });
 

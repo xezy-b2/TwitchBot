@@ -15,9 +15,10 @@ function createSocketServer(httpServer) {
   return io;
 }
 
-/** Envoie une alerte (follow/sub/resub/giftsub/cheer) à tous les overlays connectés. */
-function sendAlert(io, type, data) {
-  io.emit('alert', { type, ...data, timestamp: Date.now() });
+/** Envoie une alerte (follow/sub/resub/giftsub/cheer) à tous les overlays connectés.
+ * sound (optionnel) : { soundUrl, soundVolume } pour jouer un MP3 personnalisé sur l'overlay. */
+function sendAlert(io, type, data, sound) {
+  io.emit('alert', { type, ...data, ...(sound || {}), timestamp: Date.now() });
 }
 
 /** Envoie un texte à faire lire par l'overlay TTS (Web Speech API côté navigateur). */

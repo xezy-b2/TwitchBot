@@ -3,39 +3,112 @@
 <head>
 <meta charset="UTF-8" />
 <title>Overlay Alertes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    /* --- Palette : livrée British Racing Green sur noir (identique au subathon) --- */
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --paper: #F3F5F1;
+  }
+
+  * { box-sizing: border-box; }
+
   body {
     margin: 0;
     background: transparent;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Barlow Condensed', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
     overflow: hidden;
   }
+
   #alertBox {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.7);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--ink);
+    border: 2px solid var(--brg);
+    border-radius: 14px;
+    padding: 20px 40px 20px 28px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(46, 154, 92, 0.15), 0 18px 40px rgba(0,0,0,0.55);
     opacity: 0;
-    transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
-    background: linear-gradient(135deg, #9146FF, #6a1fd0);
-    color: white;
-    padding: 24px 48px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    transform: translateY(24px) scale(0.94);
+    transition: all 0.45s cubic-bezier(.34,1.56,.64,1);
   }
+
   #alertBox.show {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
-  #alertBox .icon { font-size: 48px; }
-  #alertBox .text { font-size: 26px; font-weight: bold; margin-top: 8px; }
+
+  /* Filet de livrée façon course automobile, discret, en coin (identique au subathon) */
+  #alertBox::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 54px;
+    height: 100%;
+    background:
+      linear-gradient(90deg,
+        var(--brg-bright) 0px, var(--brg-bright) 3px,
+        transparent 3px, transparent 9px,
+        var(--paper) 9px, var(--paper) 11px,
+        transparent 11px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  #alertIcon {
+    font-size: 42px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 10px rgba(46, 154, 92, 0.5));
+  }
+
+  .alert-copy { position: relative; z-index: 1; }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 4px;
+  }
+
+  #alertText {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--paper);
+    line-height: 1.15;
+    text-shadow: 0 0 14px rgba(46, 154, 92, 0.3);
+  }
+
+  #alertText .highlight {
+    font-family: 'Space Mono', monospace;
+    color: var(--brg-bright);
+    font-weight: 700;
+  }
 </style>
 </head>
 <body>
   <div id="alertBox">
-    <div class="icon" id="alertIcon">🎉</div>
-    <div class="text" id="alertText"></div>
+    <div id="alertIcon">🎉</div>
+    <div class="alert-copy">
+      <p class="eyebrow" id="alertEyebrow">Nouveau follow</p>
+      <div id="alertText"></div>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -43,10 +116,18 @@
     const socket = io();
     const box = document.getElementById('alertBox');
     const iconEl = document.getElementById('alertIcon');
+    const eyebrowEl = document.getElementById('alertEyebrow');
     const textEl = document.getElementById('alertText');
 
     const icons = { follow: '🎉', sub: '⭐', resub: '⭐', giftsub: '🎁', cheer: '💎' };
-    const audio = new Audio(); // ajoute ton propre son ici si besoin, ex: audio.src = '/overlay/sounds/alert.mp3'
+    const eyebrows = {
+      follow: 'Nouveau follow',
+      sub: 'Nouvel abonné',
+      resub: 'Réabonnement',
+      giftsub: 'Sub offert',
+      cheer: 'Cheer'
+    };
+    const audio = new Audio();
 
     let queue = [];
     let showing = false;
@@ -61,19 +142,24 @@
       showing = true;
       const data = queue.shift();
 
-      let text = '';
-      if (data.type === 'follow') text = `${data.user} vient de follow !`;
-      else if (data.type === 'sub') text = `${data.user} s'est abonné (Tier ${data.tier}) !`;
-      else if (data.type === 'resub') text = `${data.user} est abonné depuis ${data.months} mois !`;
-      else if (data.type === 'giftsub') text = `${data.user} a offert ${data.total} sub(s) !`;
-      else if (data.type === 'cheer') text = `${data.user} a envoyé ${data.bits} bits !`;
+      let html = '';
+      if (data.type === 'follow') html = `<span class="highlight">${data.user}</span> vient de follow !`;
+      else if (data.type === 'sub') html = `<span class="highlight">${data.user}</span> s'est abonné (Tier ${data.tier}) !`;
+      else if (data.type === 'resub') html = `<span class="highlight">${data.user}</span> est abonné depuis ${data.months} mois !`;
+      else if (data.type === 'giftsub') html = `<span class="highlight">${data.user}</span> a offert ${data.total} sub(s) !`;
+      else if (data.type === 'cheer') html = `<span class="highlight">${data.user}</span> a envoyé ${data.bits} bits !`;
 
       iconEl.textContent = icons[data.type] || '🎉';
-      textEl.textContent = text;
+      eyebrowEl.textContent = eyebrows[data.type] || 'Alerte';
+      textEl.innerHTML = html;
       box.classList.add('show');
 
-      // Son (activer l'audio dans les propriétés de la source OBS)
-      // if (audio.src) audio.play().catch(() => {});
+      // Son personnalisé configuré dans le dashboard pour ce type d'alerte
+      if (data.soundUrl) {
+        audio.src = data.soundUrl;
+        audio.volume = Math.max(0, Math.min(100, data.soundVolume ?? 100)) / 100;
+        audio.play().catch(() => {});
+      }
 
       setTimeout(() => {
         box.classList.remove('show');

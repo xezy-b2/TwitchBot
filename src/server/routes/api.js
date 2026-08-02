@@ -4,8 +4,11 @@ const router = express.Router();
 const Command = require('../../models/Command');
 const Settings = require('../../models/Settings');
 const TwitchToken = require('../../models/TwitchToken');
+const SpotifyToken = require('../../models/SpotifyToken');
+const AutoMessage = require('../../models/AutoMessage');
 const { getLeaderboard } = require('../../points/pointsManager');
 const subathonManager = require('../../subathon/subathonManager');
+const longTermGoalManager = require('../../points/longTermGoalManager');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 
@@ -18,9 +21,13 @@ router.get('/commands', async (req, res) => {
 });
 
 router.post('/commands', async (req, res) => {
-  const { name, response, cooldown, userLevel, isVoice, soundUrl, volume, restrictedToUser } = req.body;
+  const { name, response, cooldown, userLevel, isVoice, soundUrls, volume, restrictedToUser } = req.body;
   if (!name) return res.status(400).json({ error: 'name requis' });
-  if (!soundUrl && !response) return res.status(400).json({ error: 'response requis (sauf pour une commande de type Son)' });
+
+  const cleanSoundUrls = Array.isArray(soundUrls) ? soundUrls.filter(Boolean) : [];
+  if (cleanSoundUrls.length === 0 && !response) {
+    return res.status(400).json({ error: 'response requis (sauf pour une commande de type Son)' });
+  }
 
   const cmd = await Command.findOneAndUpdate(
     { channel: CHANNEL, name: name.toLowerCase().replace(/^!/, '') },
@@ -31,7 +38,8 @@ router.post('/commands', async (req, res) => {
       cooldown: cooldown ?? 5,
       userLevel: userLevel ?? 'everyone',
       isVoice: !!isVoice,
-      soundUrl: soundUrl || null,
+      soundUrls: cleanSoundUrls,
+      soundUrl: null, // on n'utilise plus le champ legacy pour les nouvelles sauvegardes
       volume: volume !== undefined ? Math.max(0, Math.min(100, parseInt(volume, 10))) : 100,
       restrictedToUser: restrictedToUser ? restrictedToUser.trim().toLowerCase().replace(/^@/, '') : null,
       enabled: true
@@ -131,6 +139,61 @@ router.get('/stats/leaderboard', async (req, res) => {
 router.get('/twitch/status', async (req, res) => {
   const token = await TwitchToken.findOne({ channel: CHANNEL });
   res.json({ connected: !!token, broadcasterId: token?.broadcasterId || null });
+});
+
+// --- Statut de connexion Spotify (OAuth) ---
+router.get('/spotify/status', async (req, res) => {
+  const token = await SpotifyToken.findOne({ channel: CHANNEL });
+  res.json({ connected: !!token });
+});
+
+// --- Messages automatiques (rappels Discord/réseaux) ---
+router.get('/automessages', async (req, res) => {
+  const messages = await AutoMessage.find({ channel: CHANNEL }).sort({ createdAt: 1 });
+  res.json(messages);
+});
+
+router.post('/automessages', async (req, res) => {
+  const { text, intervalMinutes } = req.body;
+  if (!text) return res.status(400).json({ error: 'text requis' });
+  const msg = await AutoMessage.create({
+    channel: CHANNEL,
+    text,
+    intervalMinutes: parseInt(intervalMinutes, 10) || 30
+  });
+  res.json(msg);
+});
+
+router.put('/automessages/:id', async (req, res) => {
+  const msg = await AutoMessage.findOneAndUpdate({ _id: req.params.id, channel: CHANNEL }, req.body, { new: true });
+  res.json(msg);
+});
+
+router.delete('/automessages/:id', async (req, res) => {
+  await AutoMessage.findOneAndDelete({ _id: req.params.id, channel: CHANNEL });
+  res.json({ ok: true });
+});
+
+// --- Objectif long terme (indépendant du subathon) ---
+router.get('/longtermgoal', async (req, res) => {
+  const goal = await longTermGoalManager.getGoal(CHANNEL);
+  res.json(goal);
+});
+
+router.put('/longtermgoal', async (req, res) => {
+  const { label, type, target } = req.body;
+  const goal = await longTermGoalManager.setGoal(CHANNEL, {
+    label,
+    type,
+    target: parseInt(target, 10) || 1
+  });
+  res.json(goal);
+});
+
+router.put('/longtermgoal/current', async (req, res) => {
+  const { current } = req.body;
+  const goal = await longTermGoalManager.setCurrent(CHANNEL, parseInt(current, 10) || 0);
+  res.json(goal);
 });
 
 module.exports = router;
