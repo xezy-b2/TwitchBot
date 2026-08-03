@@ -156,6 +156,11 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
       type: 'stream.online', // utilisé pour remettre à zéro le compteur "follows pendant ce live"
       version: '1',
       condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'channel.update', // utilisé pour détecter les changements de catégorie (suivi des succès Steam)
+      version: '2',
+      condition: { broadcaster_user_id: broadcasterId }
     }
   ];
 
@@ -214,6 +219,9 @@ function handleNotification(payload, onEvent) {
       break;
     case 'stream.online':
       onEvent('streamonline', {});
+      break;
+    case 'channel.update':
+      onEvent('categorychange', { categoryName: ev.category_name });
       break;
   }
 }

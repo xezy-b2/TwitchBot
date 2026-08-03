@@ -3,6 +3,7 @@ const router = express.Router();
 const subathonManager = require('../../subathon/subathonManager');
 const longTermGoalManager = require('../../points/longTermGoalManager');
 const LastEventState = require('../../models/LastEventState');
+const AchievementState = require('../../models/AchievementState');
 const { getCurrentlyPlaying } = require('../../spotify/spotifyClient');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
@@ -43,6 +44,12 @@ router.get('/longtermgoal', async (req, res) => {
 router.get('/nowplaying', async (req, res) => {
   const current = await getCurrentlyPlaying(CHANNEL);
   res.json(current || { isPlaying: false });
+});
+
+// État initial de l'overlay "succès Steam"
+router.get('/achievements', async (req, res) => {
+  const state = await AchievementState.findOne({ channel: CHANNEL });
+  res.json(state || { hasAchievements: false });
 });
 
 module.exports = router;

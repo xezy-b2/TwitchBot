@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Succès Steam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --track: #17201B;
+    --paper: #F3F5F1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 20px;
+  }
+  .box {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 12px;
+    padding: 16px 22px;
+    width: 380px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+  .box.show { opacity: 1; transform: translateY(0); }
+  .eyebrow {
+    margin: 0 0 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mint);
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .game {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--paper);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+  .count {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--mint);
+  }
+  .track {
+    width: 100%;
+    height: 12px;
+    background: var(--track);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brg-deep), var(--brg-bright));
+    border-radius: 8px;
+    transition: width 0.6s ease;
+  }
+</style>
+</head>
+<body>
+  <div class="box" id="box">
+    <p class="eyebrow">Succès Steam</p>
+    <div class="top">
+      <span class="game" id="gameName">—</span>
+      <span class="count" id="count">0/0</span>
+    </div>
+    <div class="track"><div class="fill" id="fill" style="width:0%"></div></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const box = document.getElementById('box');
+    const gameNameEl = document.getElementById('gameName');
+    const countEl = document.getElementById('count');
+    const fillEl = document.getElementById('fill');
+
+    function render(state) {
+      if (!state || !state.hasAchievements) {
+        box.classList.remove('show');
+        return;
+      }
+      gameNameEl.textContent = state.steamGameName || state.twitchCategoryName || '—';
+      countEl.textContent = `${state.unlocked}/${state.total}`;
+      const pct = state.total > 0 ? Math.min(100, Math.round((state.unlocked / state.total) * 100)) : 0;
+      fillEl.style.width = `${pct}%`;
+      box.classList.add('show');
+    }
+
+    fetch('/public-api/achievements')
+      .then((res) => res.json())
+      .then(render)
+      .catch(() => {});
+
+    socket.on('achievements:update', render);
+  </script>
+</body>
+</html>

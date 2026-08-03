@@ -248,6 +248,25 @@
         <p class="hint" id="spotifyStatus">Statut : vérification...</p>
         <button id="spotifyConnectBtn" class="btn-twitch">Connecter Spotify</button>
       </div>
+
+      <h2 style="margin-top: 28px;">Steam (suivi des succès)</h2>
+      <p class="hint">La catégorie Twitch est reliée automatiquement à un jeu Steam par recherche du nom. Si ça se trompe de jeu, corrige l'AppID ci-dessous.</p>
+      <form id="steamSettingsForm" class="card">
+        <label>SteamID64 (le tien)
+          <input id="steamId64" placeholder="ex: 76561198012345678" />
+        </label>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+      <div class="card">
+        <p class="hint">Jeu actuellement suivi : <span id="steamCurrentGame">—</span></p>
+        <p class="hint">Succès : <span id="steamCurrentCount">—</span></p>
+        <div class="row">
+          <input id="steamCorrectCategory" placeholder="Catégorie Twitch concernée" />
+          <input id="steamCorrectAppId" type="number" placeholder="AppID Steam correct" />
+          <button id="steamCorrectBtn">🔧 Corriger</button>
+        </div>
+        <p class="hint">Trouve l'AppID d'un jeu dans l'URL de sa page Steam (store.steampowered.com/app/<b>AppID</b>/...).</p>
+      </div>
     </section>
 
     <!-- === Overlays === -->
@@ -260,6 +279,7 @@
         <li>🎉 Dernier follow/sub (permanent) : <code id="overlayLastEventsUrl"></code></li>
         <li>🎯 Objectif long terme : <code id="overlayGoalUrl"></code></li>
         <li>🎵 Now Playing (Spotify) : <code id="overlayNowPlayingUrl"></code></li>
+        <li>🏆 Succès Steam : <code id="overlayAchievementsUrl"></code></li>
       </ul>
       <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
     </section>

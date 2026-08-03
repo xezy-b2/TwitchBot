@@ -263,6 +263,8 @@ async function loadSettings() {
   document.getElementById('secondsPerGiftSub').value = s.subathon.secondsPerGiftSub;
   document.getElementById('secondsPer100Bits').value = s.subathon.secondsPer100Bits;
   document.getElementById('maxSeconds').value = s.subathon.maxSeconds;
+
+  document.getElementById('steamId64').value = s.steamId64 || '';
 }
 
 document.getElementById('settingsForm').addEventListener('submit', async (e) => {
@@ -446,6 +448,7 @@ function setupOverlayLinks() {
   document.getElementById('overlayLastEventsUrl').textContent = `${base}/overlay/lastevents.html`;
   document.getElementById('overlayGoalUrl').textContent = `${base}/overlay/goal.html`;
   document.getElementById('overlayNowPlayingUrl').textContent = `${base}/overlay/nowplaying.html`;
+  document.getElementById('overlayAchievementsUrl').textContent = `${base}/overlay/achievements.html`;
 }
 
 // ============ MESSAGES AUTOMATIQUES ============
@@ -535,6 +538,47 @@ async function loadSpotifyStatus() {
     : '⛔ Aucun compte Spotify connecté';
 }
 
+// ============ STEAM (suivi des succès) ============
+async function loadSteamCurrent() {
+  const res = await fetch('/api/steam/current');
+  const state = await res.json();
+  document.getElementById('steamCurrentGame').textContent = state.hasAchievements
+    ? (state.steamGameName || state.twitchCategoryName || '—')
+    : 'Aucun jeu avec succès détecté actuellement';
+  document.getElementById('steamCurrentCount').textContent = state.hasAchievements
+    ? `${state.unlocked}/${state.total}`
+    : '—';
+  if (state.twitchCategoryName) {
+    document.getElementById('steamCorrectCategory').value = state.twitchCategoryName;
+  }
+}
+
+document.getElementById('steamSettingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ steamId64: document.getElementById('steamId64').value.trim() })
+  });
+  alert('SteamID64 enregistré !');
+});
+
+document.getElementById('steamCorrectBtn').addEventListener('click', async () => {
+  const twitchCategoryName = document.getElementById('steamCorrectCategory').value.trim();
+  const steamAppId = document.getElementById('steamCorrectAppId').value.trim();
+  if (!twitchCategoryName || !steamAppId) {
+    alert('Renseigne la catégorie Twitch et l\'AppID Steam.');
+    return;
+  }
+  await fetch('/api/steam/mapping', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ twitchCategoryName, steamAppId })
+  });
+  document.getElementById('steamCorrectAppId').value = '';
+  loadSteamCurrent();
+});
+
 // --- Init ---
 loadCommands();
 loadSettings();
@@ -544,5 +588,6 @@ loadLeaderboard();
 loadAutoMessages();
 loadLongTermGoal();
 loadSpotifyStatus();
+loadSteamCurrent();
 setupOverlayLinks();
 setInterval(loadLeaderboard, 30000);

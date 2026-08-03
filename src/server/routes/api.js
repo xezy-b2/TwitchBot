@@ -6,9 +6,11 @@ const Settings = require('../../models/Settings');
 const TwitchToken = require('../../models/TwitchToken');
 const SpotifyToken = require('../../models/SpotifyToken');
 const AutoMessage = require('../../models/AutoMessage');
+const AchievementState = require('../../models/AchievementState');
 const { getLeaderboard } = require('../../points/pointsManager');
 const subathonManager = require('../../subathon/subathonManager');
 const longTermGoalManager = require('../../points/longTermGoalManager');
+const achievementTracker = require('../../steam/achievementTracker');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 
@@ -194,6 +196,22 @@ router.put('/longtermgoal/current', async (req, res) => {
   const { current } = req.body;
   const goal = await longTermGoalManager.setCurrent(CHANNEL, parseInt(current, 10) || 0);
   res.json(goal);
+});
+
+// --- Steam (suivi des succès selon la catégorie Twitch) ---
+router.get('/steam/current', async (req, res) => {
+  const state = await AchievementState.findOne({ channel: CHANNEL });
+  res.json(state || { hasAchievements: false });
+});
+
+router.put('/steam/mapping', async (req, res) => {
+  const { twitchCategoryName, steamAppId } = req.body;
+  if (!twitchCategoryName || !steamAppId) {
+    return res.status(400).json({ error: 'twitchCategoryName et steamAppId requis' });
+  }
+  await achievementTracker.setManualMapping(CHANNEL, twitchCategoryName, parseInt(steamAppId, 10), req.app.locals.io);
+  const state = await AchievementState.findOne({ channel: CHANNEL });
+  res.json(state);
 });
 
 module.exports = router;

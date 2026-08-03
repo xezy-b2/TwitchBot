@@ -8,8 +8,9 @@ const { attachHandlers: attachCommandHandlers } = require('./src/bot/commandHand
 const { startAutoMessageLoop } = require('./src/bot/autoMessages');
 const { startEventSub } = require('./src/twitch/eventsub');
 const { startFollowPolling, resetStreamFollowCounter } = require('./src/twitch/followPoller');
-const { getUserByLogin } = require('./src/twitch/helixClient');
+const { getUserByLogin, getChannelInfo } = require('./src/twitch/helixClient');
 const { startNowPlayingPolling } = require('./src/spotify/nowPlayingPoller');
+const achievementTracker = require('./src/steam/achievementTracker');
 const subathonManager = require('./src/subathon/subathonManager');
 const longTermGoalManager = require('./src/points/longTermGoalManager');
 const Settings = require('./src/models/Settings');
@@ -37,6 +38,7 @@ async function main() {
   const app = createApp();
   const server = http.createServer(app);
   const io = createSocketServer(server);
+  app.locals.io = io;
   subathonManager.init(io);
   longTermGoalManager.init(io);
 
@@ -67,6 +69,9 @@ async function main() {
       await longTermGoalManager.recordEvent(CHANNEL, 'follows', 1);
     } else if (type === 'streamonline') {
       await resetStreamFollowCounter(CHANNEL);
+      return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
+    } else if (type === 'categorychange') {
+      await achievementTracker.refreshForCategory(CHANNEL, data.categoryName, io);
       return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
     } else if (type === 'sub') {
       chatMessage = settings.alerts.subMessage.replace('{user}', data.user).replace('{tier}', data.tier);
@@ -162,6 +167,14 @@ async function main() {
     console.log('[Spotify] Aucun compte connecté. Connecte-le depuis le dashboard pour activer l\'overlay "Now Playing".');
   }
 
+  // Suivi des succès Steam : récupère la catégorie actuelle au démarrage, puis
+  // vérifie périodiquement la progression pendant que le jeu tourne.
+  const channelInfo = await getChannelInfo(broadcasterId);
+  if (channelInfo?.game_name) {
+    await achievementTracker.refreshForCategory(CHANNEL, channelInfo.game_name, io);
+  }
+  achievementTracker.startPeriodicRefresh(CHANNEL, io);
+
   server.listen(PORT, () => {
     console.log(`[Dashboard] Disponible sur http://localhost:${PORT}/dashboard`);
     console.log(`[Overlay] Alertes         : http://localhost:${PORT}/overlay/alerts.html`);
@@ -170,6 +183,7 @@ async function main() {
     console.log(`[Overlay] Dernier follow/sub : http://localhost:${PORT}/overlay/lastevents.html`);
     console.log(`[Overlay] Objectif        : http://localhost:${PORT}/overlay/goal.html`);
     console.log(`[Overlay] Now Playing     : http://localhost:${PORT}/overlay/nowplaying.html`);
+    console.log(`[Overlay] Succès Steam    : http://localhost:${PORT}/overlay/achievements.html`);
   });
 }
 

@@ -35,6 +35,9 @@ const settingsSchema = new mongoose.Schema({
     cheerSoundUrl: { type: String, default: null }
   },
 
+  // --- Steam (suivi des succès selon la catégorie Twitch) ---
+  steamId64: { type: String, default: null },
+
   // --- Subathon ---
   subathon: {
     enabled: { type: Boolean, default: false },
