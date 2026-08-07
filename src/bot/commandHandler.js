@@ -2,6 +2,7 @@ const Settings = require('../models/Settings');
 const Command = require('../models/Command');
 const builtins = require('./builtinCommands');
 const { getUserLevel, hasPermission, trackChatter, markChatActivity } = require('./client');
+const statsManager = require('../points/statsManager');
 const { sendTTS, sendAlert, sendSound } = require('../sockets/io');
 
 const cooldowns = new Map(); // clé: "channel:command:username" -> timestamp
@@ -36,6 +37,7 @@ function attachHandlers(client, io, broadcasterId) {
     const channel = channelRaw.replace('#', '').toLowerCase();
     trackChatter(tags.username);
     markChatActivity();
+    statsManager.recordMessage(channel, tags.username);
 
     const settings = await getSettings(channel);
     const prefix = settings.prefix || '!';

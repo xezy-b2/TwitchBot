@@ -44,4 +44,36 @@ async function getAchievements(appId, steamId64) {
   }
 }
 
-module.exports = { searchSteamAppId, getAchievements };
+/**
+ * Récupère le temps de jeu (en minutes) pour un jeu donné, ou null si indisponible.
+ * On récupère toute la bibliothèque Steam (sans filtre serveur) et on cherche le
+ * jeu nous-mêmes : le paramètre appids_filter de l'API Steam est mal documenté
+ * et son format exact ne fonctionnait pas de façon fiable.
+ */
+async function getPlaytimeMinutes(appId, steamId64) {
+  if (!STEAM_API_KEY || !steamId64) return null;
+
+  try {
+    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${steamId64}&format=json&include_played_free_games=1`;
+    const { data } = await axios.get(url);
+    const games = data.response?.games;
+
+    if (!games || games.length === 0) {
+      console.warn(`[Steam] Aucun jeu renvoyé par GetOwnedGames pour steamid ${steamId64} (profil privé ?).`);
+      return null;
+    }
+
+    const game = games.find((g) => g.appid === Number(appId));
+    if (!game) {
+      console.warn(`[Steam] AppID ${appId} introuvable dans la bibliothèque Steam de ${steamId64}.`);
+      return null;
+    }
+
+    return game.playtime_forever; // en minutes
+  } catch (err) {
+    console.error('[Steam] Erreur récupération temps de jeu :', err.response?.data || err.message);
+    return null;
+  }
+}
+
+module.exports = { searchSteamAppId, getAchievements, getPlaytimeMinutes };

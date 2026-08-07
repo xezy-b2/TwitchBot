@@ -25,6 +25,7 @@
     <button class="tab-btn" data-tab="subathon">Subathon</button>
     <button class="tab-btn" data-tab="leaderboard">Classement</button>
     <button class="tab-btn" data-tab="extras">Extras</button>
+    <button class="tab-btn" data-tab="viewerstats">Stats Viewers</button>
     <button class="tab-btn" data-tab="overlays">Overlays (OBS)</button>
   </nav>
 
@@ -137,6 +138,18 @@
           <span class="alert-sound-current hint"></span>
           <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
         </div>
+
+        <label>Message succès Steam débloqué <input id="achievementMessage" /></label>
+        <p class="hint">Variables : {game} {unlocked} {total}. Pas de son pour ce type d'alerte.</p>
+
+        <label>Message auto-shoutout raid <input id="raidMessage" /></label>
+        <p class="hint">Variables : {raider} {viewers} {game}. Pas de son pour ce type d'alerte non plus.</p>
+
+        <label>Message début train de la hype <input id="hypeTrainBeginMessage" /></label>
+        <label>Message passage de niveau <input id="hypeTrainLevelUpMessage" /></label>
+        <label>Message "15 secondes restantes" <input id="hypeTrainEndingSoonMessage" /></label>
+        <label>Message fin du train (résumé) <input id="hypeTrainEndMessage" /></label>
+        <p class="hint">Variables : {level} {goal} {total} {topContributor} {topContributorTotal}. Pas de son sur ces alertes non plus.</p>
 
         <label class="checkbox"><input id="soundEnabled" type="checkbox" /> Sons activés sur l'overlay</label>
         <label>Volume des sons d'alerte (<span id="alertVolumeValue">100</span>%)
@@ -267,6 +280,55 @@
         </div>
         <p class="hint">Trouve l'AppID d'un jeu dans l'URL de sa page Steam (store.steampowered.com/app/<b>AppID</b>/...).</p>
       </div>
+
+      <h2 style="margin-top: 28px;">Discord (envoi automatique des clips)</h2>
+      <p class="hint">La commande <b>!clip</b> crée un clip Twitch et l'envoie automatiquement sur ce webhook Discord, avec un embed personnalisé.</p>
+      <form id="discordSettingsForm" class="card">
+        <label>URL du webhook Discord
+          <input id="discordWebhookUrl" placeholder="https://discord.com/api/webhooks/..." />
+        </label>
+        <label>Titre de l'embed <input id="discordEmbedTitle" /></label>
+        <label>Description de l'embed <input id="discordEmbedDescription" /></label>
+        <div class="row">
+          <label style="flex:1;">Couleur (hex) <input id="discordEmbedColor" placeholder="#2E9A5C" /></label>
+          <label style="flex:2;">Footer (optionnel) <input id="discordEmbedFooter" /></label>
+        </div>
+        <p class="hint">Variables disponibles : {clipper} {broadcaster} {game} {title}</p>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+    </section>
+
+    <!-- === Stats Viewers === -->
+    <section id="tab-viewerstats" class="tab-content">
+      <h2>Overlay Stats Viewers</h2>
+      <p class="hint">Classement des viewers par temps regardé, avec niveau, messages et statut abonné. Similaire à un widget "Top Viewers" façon WizeBot.</p>
+      <form id="statsOverlayForm" class="card">
+        <label>Titre affiché <input id="statsTitle" /></label>
+        <label>Nombre de viewers affichés <input id="statsTopCount" type="number" min="1" max="25" /></label>
+        <div class="row">
+          <label class="checkbox"><input id="statsShowLevel" type="checkbox" /> Niveau</label>
+          <label class="checkbox"><input id="statsShowUptime" type="checkbox" /> Temps regardé</label>
+          <label class="checkbox"><input id="statsShowMessages" type="checkbox" /> Messages</label>
+          <label class="checkbox"><input id="statsShowSubs" type="checkbox" /> Étoile abonné</label>
+        </div>
+        <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique Semaine → Mois → Global</label>
+        <label>Intervalle de rotation (secondes) <input id="statsRotateSeconds" type="number" min="5" /></label>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+
+      <div class="card">
+        <div class="row">
+          <button type="button" class="statsPreviewBtn" data-period="week">Aperçu Semaine</button>
+          <button type="button" class="statsPreviewBtn" data-period="month">Aperçu Mois</button>
+          <button type="button" class="statsPreviewBtn" data-period="global">Aperçu Global</button>
+        </div>
+        <table class="data-table" id="statsPreviewTable">
+          <thead><tr><th>#</th><th>Viewer</th><th>Niveau</th><th>Temps</th><th>Messages</th><th>Abonné</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <p class="hint">Astuce : ajoute <code>?period=week</code>, <code>?period=month</code> ou <code>?period=global</code> à l'URL de l'overlay pour figer une période sans rotation automatique.</p>
     </section>
 
     <!-- === Overlays === -->
@@ -280,6 +342,7 @@
         <li>🎯 Objectif long terme : <code id="overlayGoalUrl"></code></li>
         <li>🎵 Now Playing (Spotify) : <code id="overlayNowPlayingUrl"></code></li>
         <li>🏆 Succès Steam : <code id="overlayAchievementsUrl"></code></li>
+        <li>📊 Stats Viewers : <code id="overlayViewerStatsUrl"></code></li>
       </ul>
       <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
     </section>

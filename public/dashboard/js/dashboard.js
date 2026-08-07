@@ -243,6 +243,12 @@ async function loadSettings() {
   document.getElementById('resubMessage').value = s.alerts.resubMessage;
   document.getElementById('giftSubMessage').value = s.alerts.giftSubMessage;
   document.getElementById('cheerMessage').value = s.alerts.cheerMessage;
+  document.getElementById('achievementMessage').value = s.alerts.achievementMessage;
+  document.getElementById('raidMessage').value = s.alerts.raidMessage;
+  document.getElementById('hypeTrainBeginMessage').value = s.alerts.hypeTrainBeginMessage;
+  document.getElementById('hypeTrainLevelUpMessage').value = s.alerts.hypeTrainLevelUpMessage;
+  document.getElementById('hypeTrainEndingSoonMessage').value = s.alerts.hypeTrainEndingSoonMessage;
+  document.getElementById('hypeTrainEndMessage').value = s.alerts.hypeTrainEndMessage;
   document.getElementById('soundEnabled').checked = s.alerts.soundEnabled;
   document.getElementById('alertVolume').value = s.alerts.soundVolume ?? 100;
   document.getElementById('alertVolumeValue').textContent = s.alerts.soundVolume ?? 100;
@@ -265,6 +271,12 @@ async function loadSettings() {
   document.getElementById('maxSeconds').value = s.subathon.maxSeconds;
 
   document.getElementById('steamId64').value = s.steamId64 || '';
+
+  document.getElementById('discordWebhookUrl').value = s.discord?.clipWebhookUrl || '';
+  document.getElementById('discordEmbedTitle').value = s.discord?.embedTitle || '';
+  document.getElementById('discordEmbedDescription').value = s.discord?.embedDescription || '';
+  document.getElementById('discordEmbedColor').value = s.discord?.embedColor || '#2E9A5C';
+  document.getElementById('discordEmbedFooter').value = s.discord?.embedFooter || '';
 }
 
 document.getElementById('settingsForm').addEventListener('submit', async (e) => {
@@ -298,6 +310,12 @@ document.getElementById('alertsForm').addEventListener('submit', async (e) => {
         resubMessage: document.getElementById('resubMessage').value,
         giftSubMessage: document.getElementById('giftSubMessage').value,
         cheerMessage: document.getElementById('cheerMessage').value,
+        achievementMessage: document.getElementById('achievementMessage').value,
+        raidMessage: document.getElementById('raidMessage').value,
+        hypeTrainBeginMessage: document.getElementById('hypeTrainBeginMessage').value,
+        hypeTrainLevelUpMessage: document.getElementById('hypeTrainLevelUpMessage').value,
+        hypeTrainEndingSoonMessage: document.getElementById('hypeTrainEndingSoonMessage').value,
+        hypeTrainEndMessage: document.getElementById('hypeTrainEndMessage').value,
         soundEnabled: document.getElementById('soundEnabled').checked,
         soundVolume: parseInt(document.getElementById('alertVolume').value, 10),
         followSoundUrl: alertSoundUrls.follow,
@@ -449,6 +467,7 @@ function setupOverlayLinks() {
   document.getElementById('overlayGoalUrl').textContent = `${base}/overlay/goal.html`;
   document.getElementById('overlayNowPlayingUrl').textContent = `${base}/overlay/nowplaying.html`;
   document.getElementById('overlayAchievementsUrl').textContent = `${base}/overlay/achievements.html`;
+  document.getElementById('overlayViewerStatsUrl').textContent = `${base}/overlay/viewerstats.html`;
 }
 
 // ============ MESSAGES AUTOMATIQUES ============
@@ -579,6 +598,83 @@ document.getElementById('steamCorrectBtn').addEventListener('click', async () =>
   loadSteamCurrent();
 });
 
+// ============ DISCORD (webhook clips) ============
+document.getElementById('discordSettingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      discord: {
+        clipWebhookUrl: document.getElementById('discordWebhookUrl').value.trim() || null,
+        embedTitle: document.getElementById('discordEmbedTitle').value,
+        embedDescription: document.getElementById('discordEmbedDescription').value,
+        embedColor: document.getElementById('discordEmbedColor').value,
+        embedFooter: document.getElementById('discordEmbedFooter').value
+      }
+    })
+  });
+  alert('Configuration Discord enregistrée !');
+});
+
+// ============ STATS VIEWERS (overlay Level/Uptime/Messages/Subs) ============
+async function loadStatsOverlaySettings() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  const cfg = s.statsOverlay || {};
+  document.getElementById('statsTitle').value = cfg.title ?? 'Top Viewers';
+  document.getElementById('statsTopCount').value = cfg.topCount ?? 10;
+  document.getElementById('statsShowLevel').checked = cfg.showLevel !== false;
+  document.getElementById('statsShowUptime').checked = cfg.showUptime !== false;
+  document.getElementById('statsShowMessages').checked = cfg.showMessages !== false;
+  document.getElementById('statsShowSubs').checked = cfg.showSubs !== false;
+  document.getElementById('statsAutoRotate').checked = cfg.autoRotate !== false;
+  document.getElementById('statsRotateSeconds').value = cfg.rotateSeconds ?? 15;
+}
+
+document.getElementById('statsOverlayForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      statsOverlay: {
+        title: document.getElementById('statsTitle').value,
+        topCount: parseInt(document.getElementById('statsTopCount').value, 10) || 10,
+        showLevel: document.getElementById('statsShowLevel').checked,
+        showUptime: document.getElementById('statsShowUptime').checked,
+        showMessages: document.getElementById('statsShowMessages').checked,
+        showSubs: document.getElementById('statsShowSubs').checked,
+        autoRotate: document.getElementById('statsAutoRotate').checked,
+        rotateSeconds: parseInt(document.getElementById('statsRotateSeconds').value, 10) || 15
+      }
+    })
+  });
+  alert('Réglages de l\'overlay enregistrés !');
+});
+
+function formatUptimePreview(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m}m`;
+}
+
+async function loadStatsPreview(period) {
+  const res = await fetch(`/api/viewerstats/leaderboard?period=${period}`);
+  const leaderboard = await res.json();
+  const tbody = document.querySelector('#statsPreviewTable tbody');
+  tbody.innerHTML = '';
+  leaderboard.forEach((v, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>#${i + 1}</td><td>${v.username}</td><td>Lv.${v.level}</td><td>${formatUptimePreview(v.minutes)}</td><td>${v.messages}</td><td>${v.isSubscriber ? '⭐' : '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.querySelectorAll('.statsPreviewBtn').forEach((btn) => {
+  btn.addEventListener('click', () => loadStatsPreview(btn.dataset.period));
+});
+
 // --- Init ---
 loadCommands();
 loadSettings();
@@ -589,5 +685,7 @@ loadAutoMessages();
 loadLongTermGoal();
 loadSpotifyStatus();
 loadSteamCurrent();
+loadStatsOverlaySettings();
+loadStatsPreview('week');
 setupOverlayLinks();
 setInterval(loadLeaderboard, 30000);

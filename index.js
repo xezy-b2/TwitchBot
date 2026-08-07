@@ -8,11 +8,12 @@ const { attachHandlers: attachCommandHandlers } = require('./src/bot/commandHand
 const { startAutoMessageLoop } = require('./src/bot/autoMessages');
 const { startEventSub } = require('./src/twitch/eventsub');
 const { startFollowPolling, resetStreamFollowCounter } = require('./src/twitch/followPoller');
-const { getUserByLogin, getChannelInfo } = require('./src/twitch/helixClient');
+const { getUserByLogin, getChannelInfo, getStreamByLogin, getAllSubscribers } = require('./src/twitch/helixClient');
 const { startNowPlayingPolling } = require('./src/spotify/nowPlayingPoller');
 const achievementTracker = require('./src/steam/achievementTracker');
 const subathonManager = require('./src/subathon/subathonManager');
 const longTermGoalManager = require('./src/points/longTermGoalManager');
+const statsManager = require('./src/points/statsManager');
 const Settings = require('./src/models/Settings');
 const LastEventState = require('./src/models/LastEventState');
 
@@ -33,6 +34,9 @@ async function main() {
   }
   const broadcasterId = twitchUser.id;
   console.log(`[Twitch] Chaîne cible : ${CHANNEL} (id: ${broadcasterId})`);
+
+  // Statut live initial (utile si le bot redémarre pendant que le stream tourne déjà)
+  let isLive = !!(await getStreamByLogin(CHANNEL));
 
   // --- Serveur HTTP + Express + Socket.io ---
   const app = createApp();
@@ -55,6 +59,22 @@ async function main() {
     io.emit('lastevents:update', updates);
   }
 
+  // --- Hype Train : suivi du niveau + avertissement dynamique 15s avant la fin du délai en cours ---
+  let hypeTrainLevel = 0;
+  let hypeTrainEndingSoonTimeout = null;
+
+  function scheduleHypeTrainWarning(expiresAt) {
+    clearTimeout(hypeTrainEndingSoonTimeout);
+    if (!expiresAt) return;
+    const msUntilWarning = new Date(expiresAt).getTime() - Date.now() - 15000;
+    if (msUntilWarning <= 0) return; // déjà trop tard pour prévenir 15s avant
+
+    hypeTrainEndingSoonTimeout = setTimeout(async () => {
+      const settings = await Settings.findOne({ channel: CHANNEL });
+      client.say(`#${CHANNEL}`, settings.alerts.hypeTrainEndingSoonMessage);
+    }, msUntilWarning);
+  }
+
   // --- EventSub (sub / resub / gift sub / cheer) + polling des follows ---
   async function handleTwitchEvent(type, data) {
     const settings = await Settings.findOne({ channel: CHANNEL });
@@ -68,11 +88,49 @@ async function main() {
       await updateLastEventState({ lastFollowerName: data.user, lastFollowerAt: new Date() });
       await longTermGoalManager.recordEvent(CHANNEL, 'follows', 1);
     } else if (type === 'streamonline') {
+      isLive = true;
       await resetStreamFollowCounter(CHANNEL);
+      return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
+    } else if (type === 'streamoffline') {
+      isLive = false;
       return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
     } else if (type === 'categorychange') {
       await achievementTracker.refreshForCategory(CHANNEL, data.categoryName, io);
       return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
+    } else if (type === 'raid') {
+      const raiderInfo = await getChannelInfo(data.raiderBroadcasterId);
+      const message = settings.alerts.raidMessage
+        .replace(/{raider}/g, data.raider)
+        .replace(/{viewers}/g, data.viewers)
+        .replace(/{game}/g, raiderInfo?.game_name || '?');
+      client.say(`#${CHANNEL}`, message);
+      return; // message de chat uniquement, pas d'alerte visuelle/son pour l'instant
+    } else if (type === 'hypetrainbegin') {
+      hypeTrainLevel = data.level;
+      const message = settings.alerts.hypeTrainBeginMessage
+        .replace(/{level}/g, data.level)
+        .replace(/{goal}/g, data.goal);
+      client.say(`#${CHANNEL}`, message);
+      scheduleHypeTrainWarning(data.expiresAt);
+      return;
+    } else if (type === 'hypetrainprogress') {
+      if (data.level > hypeTrainLevel) {
+        hypeTrainLevel = data.level;
+        const message = settings.alerts.hypeTrainLevelUpMessage.replace(/{level}/g, data.level);
+        client.say(`#${CHANNEL}`, message);
+      }
+      scheduleHypeTrainWarning(data.expiresAt);
+      return;
+    } else if (type === 'hypetrainend') {
+      clearTimeout(hypeTrainEndingSoonTimeout);
+      hypeTrainLevel = 0;
+      const message = settings.alerts.hypeTrainEndMessage
+        .replace(/{level}/g, data.level)
+        .replace(/{total}/g, data.total)
+        .replace(/{topContributor}/g, data.topContributor || '?')
+        .replace(/{topContributorTotal}/g, data.topContributorTotal ?? '?');
+      client.say(`#${CHANNEL}`, message);
+      return;
     } else if (type === 'sub') {
       chatMessage = settings.alerts.subMessage.replace('{user}', data.user).replace('{tier}', data.tier);
       await updateLastEventState({ lastSubName: data.user, lastSubAt: new Date() });
@@ -173,7 +231,29 @@ async function main() {
   if (channelInfo?.game_name) {
     await achievementTracker.refreshForCategory(CHANNEL, channelInfo.game_name, io);
   }
-  achievementTracker.startPeriodicRefresh(CHANNEL, io);
+  achievementTracker.startPeriodicRefresh(CHANNEL, io, async ({ gameName, unlocked, total }) => {
+    const settings = await Settings.findOne({ channel: CHANNEL });
+    const message = settings.alerts.achievementMessage
+      .replace('{game}', gameName || '?')
+      .replace('{unlocked}', unlocked)
+      .replace('{total}', total);
+    client.say(`#${CHANNEL}`, message);
+  });
+
+  // --- Stats viewers : temps regardé (uniquement en live) + reset hebdo/mensuel automatique ---
+  setInterval(async () => {
+    await statsManager.checkAndResetPeriods(CHANNEL);
+    if (isLive) await statsManager.tickActiveWatchtime(CHANNEL);
+  }, 60 * 1000);
+
+  // --- Synchronisation du statut abonné (toutes les 10 minutes + une fois au démarrage) ---
+  async function syncSubs() {
+    const token = await TwitchToken.findOne({ channel: CHANNEL });
+    if (!token) return;
+    await statsManager.syncSubscribers(CHANNEL, broadcasterId, getAllSubscribers);
+  }
+  await syncSubs();
+  setInterval(syncSubs, 10 * 60 * 1000);
 
   server.listen(PORT, () => {
     console.log(`[Dashboard] Disponible sur http://localhost:${PORT}/dashboard`);
@@ -184,6 +264,7 @@ async function main() {
     console.log(`[Overlay] Objectif        : http://localhost:${PORT}/overlay/goal.html`);
     console.log(`[Overlay] Now Playing     : http://localhost:${PORT}/overlay/nowplaying.html`);
     console.log(`[Overlay] Succès Steam    : http://localhost:${PORT}/overlay/achievements.html`);
+    console.log(`[Overlay] Stats Viewers   : http://localhost:${PORT}/overlay/viewerstats.html`);
   });
 }
 

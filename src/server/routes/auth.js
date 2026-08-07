@@ -8,7 +8,9 @@ const SCOPES = [
   'moderator:read:followers',
   'channel:read:subscriptions',
   'channel:manage:broadcast',
-  'bits:read'
+  'bits:read',
+  'clips:edit',
+  'channel:read:hype_train'
 ].join(' ');
 
 const SPOTIFY_SCOPES = 'user-read-currently-playing user-read-playback-state';

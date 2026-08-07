@@ -158,8 +158,33 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
       condition: { broadcaster_user_id: broadcasterId }
     },
     {
+      type: 'stream.offline', // utilisé pour savoir quand arrêter de compter le temps regardé
+      version: '1',
+      condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
       type: 'channel.update', // utilisé pour détecter les changements de catégorie (suivi des succès Steam)
       version: '2',
+      condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'channel.raid', // utilisé pour l'auto-shoutout quand quelqu'un vous raid
+      version: '1',
+      condition: { to_broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'channel.hype_train.begin',
+      version: '1',
+      condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'channel.hype_train.progress',
+      version: '1',
+      condition: { broadcaster_user_id: broadcasterId }
+    },
+    {
+      type: 'channel.hype_train.end',
+      version: '1',
       condition: { broadcaster_user_id: broadcasterId }
     }
   ];
@@ -220,8 +245,45 @@ function handleNotification(payload, onEvent) {
     case 'stream.online':
       onEvent('streamonline', {});
       break;
+    case 'stream.offline':
+      onEvent('streamoffline', {});
+      break;
     case 'channel.update':
       onEvent('categorychange', { categoryName: ev.category_name });
+      break;
+    case 'channel.raid':
+      onEvent('raid', {
+        raider: ev.from_broadcaster_user_name,
+        raiderLogin: ev.from_broadcaster_user_login,
+        raiderBroadcasterId: ev.from_broadcaster_user_id,
+        viewers: ev.viewers
+      });
+      break;
+    case 'channel.hype_train.begin':
+      onEvent('hypetrainbegin', {
+        level: ev.level,
+        goal: ev.goal,
+        progress: ev.progress,
+        total: ev.total,
+        expiresAt: ev.expires_at
+      });
+      break;
+    case 'channel.hype_train.progress':
+      onEvent('hypetrainprogress', {
+        level: ev.level,
+        goal: ev.goal,
+        progress: ev.progress,
+        total: ev.total,
+        expiresAt: ev.expires_at
+      });
+      break;
+    case 'channel.hype_train.end':
+      onEvent('hypetrainend', {
+        level: ev.level,
+        total: ev.total,
+        topContributor: ev.top_contributions?.[0]?.user_name || null,
+        topContributorTotal: ev.top_contributions?.[0]?.total ?? null
+      });
       break;
   }
 }

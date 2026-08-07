@@ -1,8 +1,13 @@
 const Command = require('../models/Command');
 const { getPoints, transferPoints, getLeaderboard } = require('../points/pointsManager');
 const { gamble } = require('../points/gamble');
-const { getStreamByLogin, getChannelInfo, setChannelGame, setChannelTitle } = require('../twitch/helixClient');
+const { getStreamByLogin, getChannelInfo, setChannelGame, setChannelTitle, createClip, getClipInfo } = require('../twitch/helixClient');
+const { sendClipToDiscord } = require('../discord/discordWebhook');
 const subathonManager = require('../subathon/subathonManager');
+const statsManager = require('../points/statsManager');
+
+const lastClipAt = new Map(); // channel -> timestamp, cooldown global pour éviter le spam
+const CLIP_COOLDOWN_MS = 60 * 1000;
 
 /**
  * Chaque commande reçoit un contexte : { client, channel, tags, args, settings, broadcasterId, io }
@@ -141,6 +146,59 @@ const builtins = {
     if (!Number.isInteger(minutes)) return `Utilisation : !addtime minutes`;
     await subathonManager.addSeconds(ctx.channel, minutes * 60, ctx.settings);
     return `✅ ${minutes} minute(s) ajoutée(s) au subathon.`;
+  },
+
+  // --- Clips (création + envoi automatique sur Discord) ---
+  async clip(ctx) {
+    const now = Date.now();
+    const last = lastClipAt.get(ctx.channel) || 0;
+    if (now - last < CLIP_COOLDOWN_MS) {
+      const remaining = Math.ceil((CLIP_COOLDOWN_MS - (now - last)) / 1000);
+      return `⏳ Un clip vient d'être créé, réessaie dans ${remaining}s.`;
+    }
+    lastClipAt.set(ctx.channel, now);
+
+    const result = await createClip(ctx.channel, ctx.broadcasterId);
+    if (!result.ok) return `❌ Impossible de créer le clip : ${result.error}`;
+
+    const clipUrl = `https://clips.twitch.tv/${result.id}`;
+    const clipper = ctx.tags['display-name'] || ctx.tags.username;
+
+    // Le clip met quelques secondes à être traité côté Twitch avant d'avoir sa miniature.
+    setTimeout(async () => {
+      try {
+        const [clipInfo, channelInfo] = await Promise.all([
+          getClipInfo(result.id),
+          getChannelInfo(ctx.broadcasterId)
+        ]);
+        await sendClipToDiscord(ctx.settings.discord, {
+          clipper,
+          broadcaster: ctx.channel,
+          game: channelInfo?.game_name || '',
+          title: channelInfo?.title || '',
+          clipUrl,
+          thumbnailUrl: clipInfo?.thumbnail_url || null
+        });
+      } catch (err) {
+        console.error('[Clip] Erreur envoi Discord différé :', err.message);
+      }
+    }, 8000);
+
+    return `🎬 Clip créé par ${clipper} : ${clipUrl}`;
+  },
+
+  // --- Stats viewers (temps regardé / messages, par période) ---
+  async myuptime(ctx) {
+    const target = ctx.args[0]?.replace('@', '') || ctx.tags.username;
+    const stats = await statsManager.getOrCreateUserStats(ctx.channel, target);
+
+    const fmt = (minutes, messages) => {
+      const hours = minutes / 60;
+      const perHour = hours > 0 ? (messages / hours).toFixed(1) : '0';
+      return `${minutes}m (${messages} msg (${perHour}msg/h))`;
+    };
+
+    return `⏱ ${target} [Semaine] ${fmt(stats.weekMinutes, stats.weekMessages)} [Mois] ${fmt(stats.monthMinutes, stats.monthMessages)} [Global] ${fmt(stats.allTimeMinutes, stats.allTimeMessages)}`;
   }
 };
 

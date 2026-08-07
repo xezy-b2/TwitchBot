@@ -4,7 +4,9 @@ const subathonManager = require('../../subathon/subathonManager');
 const longTermGoalManager = require('../../points/longTermGoalManager');
 const LastEventState = require('../../models/LastEventState');
 const AchievementState = require('../../models/AchievementState');
+const Settings = require('../../models/Settings');
 const { getCurrentlyPlaying } = require('../../spotify/spotifyClient');
+const statsManager = require('../../points/statsManager');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 
@@ -50,6 +52,18 @@ router.get('/nowplaying', async (req, res) => {
 router.get('/achievements', async (req, res) => {
   const state = await AchievementState.findOne({ channel: CHANNEL });
   res.json(state || { hasAchievements: false });
+});
+
+// Overlay "stats viewers" : classement + réglages d'affichage pour la période demandée
+router.get('/viewerstats', async (req, res) => {
+  const period = ['week', 'month', 'global'].includes(req.query.period) ? req.query.period : 'week';
+  const settings = await Settings.findOne({ channel: CHANNEL });
+  const leaderboard = await statsManager.getLeaderboard(CHANNEL, period, settings?.statsOverlay?.topCount || 10);
+  res.json({
+    period,
+    settings: settings?.statsOverlay || {},
+    leaderboard
+  });
 });
 
 module.exports = router;

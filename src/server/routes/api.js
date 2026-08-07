@@ -11,6 +11,7 @@ const { getLeaderboard } = require('../../points/pointsManager');
 const subathonManager = require('../../subathon/subathonManager');
 const longTermGoalManager = require('../../points/longTermGoalManager');
 const achievementTracker = require('../../steam/achievementTracker');
+const statsManager = require('../../points/statsManager');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 
@@ -212,6 +213,13 @@ router.put('/steam/mapping', async (req, res) => {
   await achievementTracker.setManualMapping(CHANNEL, twitchCategoryName, parseInt(steamAppId, 10), req.app.locals.io);
   const state = await AchievementState.findOne({ channel: CHANNEL });
   res.json(state);
+});
+
+// --- Stats viewers (aperçu depuis le dashboard) ---
+router.get('/viewerstats/leaderboard', async (req, res) => {
+  const period = ['week', 'month', 'global'].includes(req.query.period) ? req.query.period : 'week';
+  const leaderboard = await statsManager.getLeaderboard(CHANNEL, period, 25);
+  res.json(leaderboard);
 });
 
 module.exports = router;

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Stats Viewers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --ink2: #101512;
+    --track: #17201B;
+    --paper: #F3F5F1;
+    --muted: #7C948A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 20px;
+  }
+  .panel {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 14px;
+    width: 420px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid rgba(46, 154, 92, 0.25);
+  }
+  .panel-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--paper);
+    margin: 0;
+  }
+  .panel-period {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--brg-bright);
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: opacity 0.3s ease;
+  }
+
+  .rows { padding: 8px 10px; }
+  .row {
+    display: grid;
+    grid-template-columns: 26px 1fr auto auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+  }
+  .row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+
+  .rank {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .row:nth-child(1) .rank { color: #FFD35C; }
+  .row:nth-child(2) .rank { color: #CBD5DA; }
+  .row:nth-child(3) .rank { color: #D8A25E; }
+
+  .name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sub-star { color: var(--brg-bright); font-size: 12px; }
+
+  .stat {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--mint);
+    white-space: nowrap;
+  }
+  .level-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--brg-bright);
+    border: 1px solid rgba(46, 154, 92, 0.4);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+
+  .empty {
+    padding: 24px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="panel-header">
+      <p class="panel-title" id="title">Top Viewers</p>
+      <span class="panel-period" id="periodBadge">SEMAINE</span>
+    </div>
+    <div class="rows" id="rows">
+      <p class="empty">Chargement...</p>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const fixedPeriod = params.get('period');
+    const periods = ['week', 'month', 'global'];
+    const periodLabels = { week: 'SEMAINE', month: 'MOIS', global: 'GLOBAL' };
+
+    let currentPeriod = periods.includes(fixedPeriod) ? fixedPeriod : 'week';
+    let periodIndex = periods.indexOf(currentPeriod);
+
+    const titleEl = document.getElementById('title');
+    const periodBadgeEl = document.getElementById('periodBadge');
+    const rowsEl = document.getElementById('rows');
+
+    function formatUptime(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m}m`;
+    }
+
+    function render(data) {
+      const settings = data.settings || {};
+      titleEl.textContent = settings.title || 'Top Viewers';
+      periodBadgeEl.textContent = periodLabels[data.period] || '';
+
+      if (!data.leaderboard || data.leaderboard.length === 0) {
+        rowsEl.innerHTML = '<p class="empty">Aucune donnée pour le moment.</p>';
+        return;
+      }
+
+      rowsEl.innerHTML = data.leaderboard.map((v, i) => {
+        const cols = [`<span class="rank">#${i + 1}</span>`, `<span class="name">${v.isSubscriber && settings.showSubs !== false ? '<span class="sub-star">★</span>' : ''}${v.username}</span>`];
+        if (settings.showLevel !== false) cols.push(`<span class="level-badge">Lv.${v.level}</span>`);
+        if (settings.showUptime !== false) cols.push(`<span class="stat">${formatUptime(v.minutes)}</span>`);
+        if (settings.showMessages !== false) cols.push(`<span class="stat">${v.messages} msg</span>`);
+        return `<div class="row">${cols.join('')}</div>`;
+      }).join('');
+    }
+
+    async function fetchAndRender() {
+      try {
+        const res = await fetch(`/public-api/viewerstats?period=${currentPeriod}`);
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        // silencieux : on retentera au prochain cycle
+      }
+    }
+
+    fetchAndRender();
+    setInterval(fetchAndRender, 20000); // rafraîchit les données régulièrement
+
+    // Rotation automatique entre les 3 périodes (seulement si aucune période n'est figée dans l'URL)
+    if (!periods.includes(fixedPeriod)) {
+      fetch('/public-api/viewerstats?period=week').then((r) => r.json()).then((data) => {
+        const settings = data.settings || {};
+        if (settings.autoRotate !== false) {
+          const seconds = settings.rotateSeconds || 15;
+          setInterval(() => {
+            periodIndex = (periodIndex + 1) % periods.length;
+            currentPeriod = periods[periodIndex];
+            fetchAndRender();
+          }, seconds * 1000);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -153,6 +153,64 @@ async function getChannelFollowers(channel, broadcasterId, first = 20) {
   return { followers: data.data, total: data.total };
 }
 
+/**
+ * Crée un clip sur la chaîne (nécessite le scope clips:edit, donc que le
+ * streamer ait reconnecté son compte Twitch après l'ajout de cette fonctionnalité).
+ * Renvoie immédiatement un id : le clip met quelques secondes à être prêt côté Twitch.
+ */
+async function createClip(channel, broadcasterId) {
+  const userToken = await getUserAccessToken(channel);
+  if (!userToken) return { ok: false, error: 'Compte Twitch non connecté (reconnecte-le depuis le dashboard).' };
+
+  try {
+    const { data } = await axios.post('https://api.twitch.tv/helix/clips', null, {
+      headers: helixHeaders(userToken),
+      params: { broadcaster_id: broadcasterId }
+    });
+    const clip = data.data[0];
+    return { ok: true, id: clip.id, editUrl: clip.edit_url };
+  } catch (err) {
+    const message = err.response?.data?.message || err.message;
+    return { ok: false, error: message };
+  }
+}
+
+/** Récupère les infos d'un clip (titre, miniature...) une fois qu'il est prêt côté Twitch. */
+async function getClipInfo(clipId) {
+  const token = await getAppAccessToken();
+  try {
+    const { data } = await axios.get('https://api.twitch.tv/helix/clips', {
+      headers: helixHeaders(token),
+      params: { id: clipId }
+    });
+    return data.data[0] || null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/** Récupère la liste complète (paginée) des logins abonnés à la chaîne. */
+async function getAllSubscribers(channel, broadcasterId) {
+  const userToken = await getUserAccessToken(channel);
+  if (!userToken) return [];
+
+  let logins = [];
+  let cursor;
+  try {
+    do {
+      const { data } = await axios.get('https://api.twitch.tv/helix/subscriptions', {
+        headers: helixHeaders(userToken),
+        params: { broadcaster_id: broadcasterId, first: 100, ...(cursor ? { after: cursor } : {}) }
+      });
+      logins = logins.concat(data.data.map((s) => s.user_login));
+      cursor = data.pagination?.cursor;
+    } while (cursor);
+  } catch (err) {
+    console.error('[Twitch] Erreur récupération abonnés :', err.response?.data || err.message);
+  }
+  return logins;
+}
+
 module.exports = {
   getAppAccessToken,
   getUserAccessToken,
@@ -162,5 +220,8 @@ module.exports = {
   searchGame,
   setChannelGame,
   setChannelTitle,
-  getChannelFollowers
+  getChannelFollowers,
+  createClip,
+  getClipInfo,
+  getAllSubscribers
 };
