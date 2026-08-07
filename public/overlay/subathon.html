@@ -108,6 +108,12 @@
     border-radius: 14px;
     padding: 16px 20px 18px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    perspective: 900px;
+  }
+
+  #goalsList {
+    transition: transform 0.32s ease, opacity 0.32s ease;
+    transform-style: preserve-3d;
   }
 
   .goals-box .eyebrow { margin-bottom: 12px; }
@@ -258,13 +264,37 @@
         : '';
     }
 
+    /** Change de page avec un effet de rotation façon page de livre qui se tourne. */
+    function changePage(newPage, direction = 'next') {
+      if (newPage === currentPage || totalPages() <= 1) return;
+
+      const outAngle = direction === 'next' ? -80 : 80;
+      goalsList.style.transformOrigin = direction === 'next' ? 'left center' : 'right center';
+      goalsList.style.transform = `rotateY(${outAngle}deg)`;
+      goalsList.style.opacity = '0.1';
+
+      setTimeout(() => {
+        currentPage = newPage;
+        renderGoals();
+
+        // Repositionne instantanément de l'autre côté avant de tourner vers la position finale
+        goalsList.style.transition = 'none';
+        goalsList.style.transform = `rotateY(${-outAngle}deg)`;
+        goalsList.style.opacity = '0.1';
+        void goalsList.offsetWidth; // force le navigateur à appliquer le style avant la transition suivante
+
+        goalsList.style.transition = 'transform 0.32s ease, opacity 0.32s ease';
+        goalsList.style.transform = 'rotateY(0deg)';
+        goalsList.style.opacity = '1';
+      }, 320);
+    }
+
     function setupGoalsRotation() {
       clearInterval(rotateTimer);
       if (totalPages() <= 1) return;
 
       rotateTimer = setInterval(() => {
-        currentPage = (currentPage + 1) % totalPages();
-        renderGoals();
+        changePage((currentPage + 1) % totalPages(), 'next');
       }, goalsRotateSeconds * 1000);
     }
 
@@ -292,6 +322,17 @@
       totals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
       renderTimer(data.secondsRemaining, data.isRunning);
       renderGoals();
+    });
+
+    // Navigation manuelle déclenchée depuis les flèches du dashboard
+    socket.on('subathon:goals:navigate', (data) => {
+      if (totalPages() <= 1) return;
+      const direction = data.direction === 'prev' ? 'prev' : 'next';
+      const newPage = direction === 'next'
+        ? (currentPage + 1) % totalPages()
+        : (currentPage - 1 + totalPages()) % totalPages();
+      changePage(newPage, direction);
+      setupGoalsRotation(); // repart de zéro sur le minuteur pour ne pas re-tourner juste après
     });
 
     socket.on('subathon:goals', (data) => {
