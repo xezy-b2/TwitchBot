@@ -1,13 +1,16 @@
 const Command = require('../models/Command');
 const { getPoints, transferPoints, getLeaderboard } = require('../points/pointsManager');
 const { gamble } = require('../points/gamble');
-const { getStreamByLogin, getChannelInfo, setChannelGame, setChannelTitle, createClip, getClipInfo } = require('../twitch/helixClient');
+const { getStreamByLogin, getChannelInfo, setChannelGame, setChannelTitle, createClip, getClipInfo, getUserByLogin, getFollowDate } = require('../twitch/helixClient');
 const { sendClipToDiscord } = require('../discord/discordWebhook');
 const subathonManager = require('../subathon/subathonManager');
 const statsManager = require('../points/statsManager');
 
 const lastClipAt = new Map(); // channel -> timestamp, cooldown global pour éviter le spam
 const CLIP_COOLDOWN_MS = 60 * 1000;
+
+const lastFcAt = new Map(); // "channel:username" -> timestamp
+const FC_COOLDOWN_MS = 15 * 1000;
 
 /**
  * Chaque commande reçoit un contexte : { client, channel, tags, args, settings, broadcasterId, io }
@@ -199,6 +202,31 @@ const builtins = {
     };
 
     return `⏱ ${target} [Semaine] ${fmt(stats.weekMinutes, stats.weekMessages)} [Mois] ${fmt(stats.monthMinutes, stats.monthMessages)} [Global] ${fmt(stats.allTimeMinutes, stats.allTimeMessages)}`;
+  },
+
+  // --- Date de follow d'un viewer précis ---
+  async fc(ctx) {
+    const key = `${ctx.channel}:${ctx.tags.username}`;
+    const now = Date.now();
+    const last = lastFcAt.get(key) || 0;
+    if (now - last < FC_COOLDOWN_MS) return null; // cooldown silencieux, pas de message
+    lastFcAt.set(key, now);
+
+    const target = (ctx.args[0]?.replace('@', '') || ctx.tags.username).toLowerCase();
+
+    const targetUser = await getUserByLogin(target);
+    if (!targetUser) return `Utilisateur "${target}" introuvable.`;
+
+    const followedAt = await getFollowDate(ctx.channel, ctx.broadcasterId, targetUser.id);
+    if (!followedAt) return `👤 ${target} ne suit pas encore la chaîne.`;
+
+    const followDate = new Date(followedAt);
+    const days = Math.floor((Date.now() - followDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    const dateStr = followDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = followDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+    return `👤 ${target} : Dernier follow le ${dateStr} ${timeStr} (${days} Jour(s))`;
   }
 };
 
