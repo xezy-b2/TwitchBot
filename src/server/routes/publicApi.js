@@ -15,13 +15,16 @@ const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
 router.get('/subathon', async (req, res) => {
   const state = await subathonManager.getState(CHANNEL);
   const goals = await subathonManager.getGoals(CHANNEL);
+  const settings = await Settings.findOne({ channel: CHANNEL });
   res.json({
     isRunning: state.isRunning,
     secondsRemaining: state.secondsRemaining,
     totalSecondsAdded: state.totalSecondsAdded,
     totalSubs: state.totalSubs,
     totalBits: state.totalBits,
-    goals
+    goals,
+    goalsPerPage: settings?.subathon?.goalsPerPage || 4,
+    goalsRotateSeconds: settings?.subathon?.goalsRotateSeconds || 8
   });
 });
 
