@@ -31,7 +31,6 @@ const settingsSchema = new mongoose.Schema({
     hypeTrainLevelUpMessage: { type: String, default: '🎉 Niveau {level} atteint sur le train de la hype !' },
     hypeTrainEndingSoonMessage: { type: String, default: '⏰ Plus que 15 secondes pour maintenir le train de la hype en vie !' },
     hypeTrainEndMessage: { type: String, default: '🏁 Train de la hype terminé au niveau {level} avec {total} points au total ! Merci à {topContributor} pour sa contribution !' },
-    raidMessage: { type: String, default: '🚨 {raider} vient de nous raid avec {viewers} viewer(s) ! Allez faire un tour sur sa chaîne : {raiderUrl}' },
     soundEnabled: { type: Boolean, default: true },
     soundVolume: { type: Number, default: 100, min: 0, max: 100 },
     // Son personnalisé (MP3) joué sur l'overlay pour chaque type d'alerte, en plus du texte
@@ -76,7 +75,10 @@ const settingsSchema = new mongoose.Schema({
     secondsPerSubT3: { type: Number, default: 1800 },
     secondsPerGiftSub: { type: Number, default: 300 },
     secondsPer100Bits: { type: Number, default: 120 },
-    maxSeconds: { type: Number, default: 0 } // 0 = pas de limite
+    maxSeconds: { type: Number, default: 0 }, // 0 = pas de limite
+    // Pagination des objectifs sur l'overlay (évite d'en afficher trop d'un coup)
+    goalsPerPage: { type: Number, default: 4, min: 3, max: 5 },
+    goalsRotateSeconds: { type: Number, default: 8, min: 3 }
   }
 }, { timestamps: true });
 
