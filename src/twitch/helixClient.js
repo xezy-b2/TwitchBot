@@ -227,6 +227,26 @@ async function getUsersInfo(logins) {
   }
 }
 
+/**
+ * Vérifie si un utilisateur précis suit la chaîne, et depuis quand.
+ * Renvoie la date ISO du follow, ou null s'il ne suit pas la chaîne.
+ */
+async function getFollowDate(channel, broadcasterId, userId) {
+  const userToken = await getUserAccessToken(channel);
+  if (!userToken) return null;
+
+  try {
+    const { data } = await axios.get('https://api.twitch.tv/helix/channels/followers', {
+      headers: helixHeaders(userToken),
+      params: { broadcaster_id: broadcasterId, user_id: userId }
+    });
+    return data.data[0]?.followed_at || null;
+  } catch (err) {
+    console.error('[Twitch] Erreur vérification follow :', err.response?.data || err.message);
+    return null;
+  }
+}
+
 module.exports = {
   getAppAccessToken,
   getUserAccessToken,
@@ -240,5 +260,6 @@ module.exports = {
   createClip,
   getClipInfo,
   getAllSubscribers,
-  getUsersInfo
+  getUsersInfo,
+  getFollowDate
 };
