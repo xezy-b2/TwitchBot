@@ -33,7 +33,10 @@
     background: var(--ink);
     border: 1px solid rgba(46, 154, 92, 0.35);
     border-radius: 12px;
-    width: 300px;
+    width: 325px;
+    height: 700px;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 12px 30px rgba(0,0,0,0.5);
     overflow: hidden;
   }
@@ -132,7 +135,7 @@
   }
 
   /* --- Liste (rang 4+) --- */
-  .list { padding: 2px 8px 8px; }
+  .list { padding: 2px 8px 8px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
   .list-row {
     display: flex;
     align-items: center;
@@ -153,7 +156,7 @@
   .list-name .star { color: var(--brg-bright); font-size: 9px; }
   .list-value { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--mint); }
 
-  .empty { padding: 16px 14px; text-align: center; color: var(--muted); font-size: 11px; }
+  .empty { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted); font-size: 12px; }
 
   /* --- Onglets période --- */
   .period-tabs {
