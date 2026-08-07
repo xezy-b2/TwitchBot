@@ -269,6 +269,8 @@ async function loadSettings() {
   document.getElementById('secondsPerGiftSub').value = s.subathon.secondsPerGiftSub;
   document.getElementById('secondsPer100Bits').value = s.subathon.secondsPer100Bits;
   document.getElementById('maxSeconds').value = s.subathon.maxSeconds;
+  document.getElementById('goalsPerPage').value = s.subathon.goalsPerPage ?? 4;
+  document.getElementById('goalsRotateSeconds').value = s.subathon.goalsRotateSeconds ?? 8;
 
   document.getElementById('steamId64').value = s.steamId64 || '';
 
@@ -342,7 +344,9 @@ document.getElementById('subathonConfigForm').addEventListener('submit', async (
         secondsPerSubT3: parseInt(document.getElementById('secondsPerSubT3').value, 10),
         secondsPerGiftSub: parseInt(document.getElementById('secondsPerGiftSub').value, 10),
         secondsPer100Bits: parseInt(document.getElementById('secondsPer100Bits').value, 10),
-        maxSeconds: parseInt(document.getElementById('maxSeconds').value, 10)
+        maxSeconds: parseInt(document.getElementById('maxSeconds').value, 10),
+        goalsPerPage: Math.min(5, Math.max(3, parseInt(document.getElementById('goalsPerPage').value, 10) || 4)),
+        goalsRotateSeconds: parseInt(document.getElementById('goalsRotateSeconds').value, 10) || 8
       }
     })
   });
