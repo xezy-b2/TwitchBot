@@ -217,8 +217,9 @@ router.put('/steam/mapping', async (req, res) => {
 
 // --- Stats viewers (aperçu depuis le dashboard) ---
 router.get('/viewerstats/leaderboard', async (req, res) => {
-  const period = ['week', 'month', 'global'].includes(req.query.period) ? req.query.period : 'week';
-  const leaderboard = await statsManager.getLeaderboard(CHANNEL, period, 25);
+  const metric = ['uptime', 'messages', 'level', 'currency', 'subs'].includes(req.query.metric) ? req.query.metric : 'uptime';
+  const period = ['week', 'month', 'session', 'global'].includes(req.query.period) ? req.query.period : 'global';
+  const leaderboard = await statsManager.getLeaderboard(CHANNEL, metric, period, 25);
   res.json(leaderboard);
 });
 

@@ -617,17 +617,19 @@ document.getElementById('discordSettingsForm').addEventListener('submit', async 
   alert('Configuration Discord enregistrée !');
 });
 
-// ============ STATS VIEWERS (overlay Level/Uptime/Messages/Subs) ============
+// ============ STATS VIEWERS (overlay Niveau/Temps/Messages/Monnaie/Abonnés) ============
 async function loadStatsOverlaySettings() {
   const res = await fetch('/api/settings');
   const s = await res.json();
   const cfg = s.statsOverlay || {};
-  document.getElementById('statsTitle').value = cfg.title ?? 'Top Viewers';
+  document.getElementById('statsTitle').value = cfg.title ?? 'LeaderBoard';
   document.getElementById('statsTopCount').value = cfg.topCount ?? 10;
-  document.getElementById('statsShowLevel').checked = cfg.showLevel !== false;
-  document.getElementById('statsShowUptime').checked = cfg.showUptime !== false;
-  document.getElementById('statsShowMessages').checked = cfg.showMessages !== false;
-  document.getElementById('statsShowSubs').checked = cfg.showSubs !== false;
+  document.getElementById('statsDefaultMetric').value = cfg.defaultMetric ?? 'uptime';
+  document.getElementById('statsShowLevelTab').checked = cfg.showLevelTab !== false;
+  document.getElementById('statsShowUptimeTab').checked = cfg.showUptimeTab !== false;
+  document.getElementById('statsShowMessagesTab').checked = cfg.showMessagesTab !== false;
+  document.getElementById('statsShowCurrencyTab').checked = cfg.showCurrencyTab !== false;
+  document.getElementById('statsShowSubsTab').checked = cfg.showSubsTab !== false;
   document.getElementById('statsAutoRotate').checked = cfg.autoRotate !== false;
   document.getElementById('statsRotateSeconds').value = cfg.rotateSeconds ?? 15;
 }
@@ -641,10 +643,12 @@ document.getElementById('statsOverlayForm').addEventListener('submit', async (e)
       statsOverlay: {
         title: document.getElementById('statsTitle').value,
         topCount: parseInt(document.getElementById('statsTopCount').value, 10) || 10,
-        showLevel: document.getElementById('statsShowLevel').checked,
-        showUptime: document.getElementById('statsShowUptime').checked,
-        showMessages: document.getElementById('statsShowMessages').checked,
-        showSubs: document.getElementById('statsShowSubs').checked,
+        defaultMetric: document.getElementById('statsDefaultMetric').value,
+        showLevelTab: document.getElementById('statsShowLevelTab').checked,
+        showUptimeTab: document.getElementById('statsShowUptimeTab').checked,
+        showMessagesTab: document.getElementById('statsShowMessagesTab').checked,
+        showCurrencyTab: document.getElementById('statsShowCurrencyTab').checked,
+        showSubsTab: document.getElementById('statsShowSubsTab').checked,
         autoRotate: document.getElementById('statsAutoRotate').checked,
         rotateSeconds: parseInt(document.getElementById('statsRotateSeconds').value, 10) || 15
       }
@@ -653,27 +657,28 @@ document.getElementById('statsOverlayForm').addEventListener('submit', async (e)
   alert('Réglages de l\'overlay enregistrés !');
 });
 
-function formatUptimePreview(minutes) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m}m`;
+function formatStatsPreviewValue(metric, value) {
+  if (metric === 'level') return `Lv.${value}`;
+  if (metric === 'messages') return `${value} msg`;
+  if (metric === 'currency') return `${value} pts`;
+  return value >= 60 ? `${Math.floor(value / 60)}h${(value % 60).toString().padStart(2, '0')}` : `${value}m`;
 }
 
-async function loadStatsPreview(period) {
-  const res = await fetch(`/api/viewerstats/leaderboard?period=${period}`);
+async function loadStatsPreview() {
+  const metric = document.getElementById('statsPreviewMetric').value;
+  const period = document.getElementById('statsPreviewPeriod').value;
+  const res = await fetch(`/api/viewerstats/leaderboard?metric=${metric}&period=${period}`);
   const leaderboard = await res.json();
   const tbody = document.querySelector('#statsPreviewTable tbody');
   tbody.innerHTML = '';
   leaderboard.forEach((v, i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>#${i + 1}</td><td>${v.username}</td><td>Lv.${v.level}</td><td>${formatUptimePreview(v.minutes)}</td><td>${v.messages}</td><td>${v.isSubscriber ? '⭐' : '—'}</td>`;
+    tr.innerHTML = `<td>#${i + 1}</td><td>${v.username}</td><td>${formatStatsPreviewValue(metric, v.value)}</td><td>${v.isSubscriber ? '⭐' : '—'}</td>`;
     tbody.appendChild(tr);
   });
 }
 
-document.querySelectorAll('.statsPreviewBtn').forEach((btn) => {
-  btn.addEventListener('click', () => loadStatsPreview(btn.dataset.period));
-});
+document.getElementById('statsPreviewBtn').addEventListener('click', loadStatsPreview);
 
 // --- Init ---
 loadCommands();
@@ -686,6 +691,6 @@ loadLongTermGoal();
 loadSpotifyStatus();
 loadSteamCurrent();
 loadStatsOverlaySettings();
-loadStatsPreview('week');
+loadStatsPreview();
 setupOverlayLinks();
 setInterval(loadLeaderboard, 30000);

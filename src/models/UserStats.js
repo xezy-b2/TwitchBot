@@ -10,11 +10,17 @@ const userStatsSchema = new mongoose.Schema({
   monthMinutes: { type: Number, default: 0 },
   monthMessages: { type: Number, default: 0 },
 
+  sessionMinutes: { type: Number, default: 0 },
+  sessionMessages: { type: Number, default: 0 },
+
   allTimeMinutes: { type: Number, default: 0 },
   allTimeMessages: { type: Number, default: 0 },
 
   isSubscriber: { type: Boolean, default: false },
-  lastMessageAt: { type: Date, default: null }
+  lastMessageAt: { type: Date, default: null },
+
+  avatarUrl: { type: String, default: null },
+  avatarUpdatedAt: { type: Date, default: null }
 });
 
 userStatsSchema.index({ channel: 1, username: 1 }, { unique: true });

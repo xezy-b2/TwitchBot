@@ -90,6 +90,7 @@ async function main() {
     } else if (type === 'streamonline') {
       isLive = true;
       await resetStreamFollowCounter(CHANNEL);
+      await statsManager.resetSession(CHANNEL);
       return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
     } else if (type === 'streamoffline') {
       isLive = false;

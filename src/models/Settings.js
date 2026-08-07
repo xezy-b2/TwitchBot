@@ -54,14 +54,16 @@ const settingsSchema = new mongoose.Schema({
     embedFooter: { type: String, default: '' }
   },
 
-  // --- Overlay stats viewers (level / temps regardé / messages / abonnés) ---
+  // --- Overlay stats viewers (onglets Level / Uptime / Msg / Currency / Subs, par période) ---
   statsOverlay: {
-    title: { type: String, default: 'Top Viewers' },
-    topCount: { type: Number, default: 10, min: 1, max: 25 },
-    showLevel: { type: Boolean, default: true },
-    showUptime: { type: Boolean, default: true },
-    showMessages: { type: Boolean, default: true },
-    showSubs: { type: Boolean, default: true },
+    title: { type: String, default: 'LeaderBoard' },
+    topCount: { type: Number, default: 10, min: 3, max: 25 },
+    defaultMetric: { type: String, enum: ['uptime', 'messages', 'level', 'currency', 'subs'], default: 'uptime' },
+    showLevelTab: { type: Boolean, default: true },
+    showUptimeTab: { type: Boolean, default: true },
+    showMessagesTab: { type: Boolean, default: true },
+    showCurrencyTab: { type: Boolean, default: true },
+    showSubsTab: { type: Boolean, default: true },
     autoRotate: { type: Boolean, default: true },
     rotateSeconds: { type: Number, default: 15, min: 5 }
   },

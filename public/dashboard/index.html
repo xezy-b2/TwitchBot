@@ -301,34 +301,59 @@
     <!-- === Stats Viewers === -->
     <section id="tab-viewerstats" class="tab-content">
       <h2>Overlay Stats Viewers</h2>
-      <p class="hint">Classement des viewers par temps regardé, avec niveau, messages et statut abonné. Similaire à un widget "Top Viewers" façon WizeBot.</p>
+      <p class="hint">Un seul overlay avec des onglets Niveau / Temps regardé / Messages / Monnaie / Abonnés, chacun consultable par Semaine / Mois / Session (live en cours) / Global — façon WizeBot.</p>
       <form id="statsOverlayForm" class="card">
         <label>Titre affiché <input id="statsTitle" /></label>
-        <label>Nombre de viewers affichés <input id="statsTopCount" type="number" min="1" max="25" /></label>
         <div class="row">
-          <label class="checkbox"><input id="statsShowLevel" type="checkbox" /> Niveau</label>
-          <label class="checkbox"><input id="statsShowUptime" type="checkbox" /> Temps regardé</label>
-          <label class="checkbox"><input id="statsShowMessages" type="checkbox" /> Messages</label>
-          <label class="checkbox"><input id="statsShowSubs" type="checkbox" /> Étoile abonné</label>
+          <label style="flex:1;">Nombre de viewers affichés <input id="statsTopCount" type="number" min="3" max="25" /></label>
+          <label style="flex:1;">Onglet affiché par défaut
+            <select id="statsDefaultMetric">
+              <option value="uptime">Temps regardé</option>
+              <option value="level">Niveau</option>
+              <option value="messages">Messages</option>
+              <option value="currency">Monnaie (points)</option>
+              <option value="subs">Abonnés</option>
+            </select>
+          </label>
         </div>
-        <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique Semaine → Mois → Global</label>
+        <p class="hint">Onglets visibles sur l'overlay :</p>
+        <div class="row">
+          <label class="checkbox"><input id="statsShowLevelTab" type="checkbox" /> Niveau</label>
+          <label class="checkbox"><input id="statsShowUptimeTab" type="checkbox" /> Temps regardé</label>
+          <label class="checkbox"><input id="statsShowMessagesTab" type="checkbox" /> Messages</label>
+          <label class="checkbox"><input id="statsShowCurrencyTab" type="checkbox" /> Monnaie</label>
+          <label class="checkbox"><input id="statsShowSubsTab" type="checkbox" /> Abonnés</label>
+        </div>
+        <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique entre les périodes (Semaine/Mois/Session/Global)</label>
         <label>Intervalle de rotation (secondes) <input id="statsRotateSeconds" type="number" min="5" /></label>
         <button type="submit">💾 Enregistrer</button>
       </form>
 
       <div class="card">
+        <p class="hint">Aperçu :</p>
         <div class="row">
-          <button type="button" class="statsPreviewBtn" data-period="week">Aperçu Semaine</button>
-          <button type="button" class="statsPreviewBtn" data-period="month">Aperçu Mois</button>
-          <button type="button" class="statsPreviewBtn" data-period="global">Aperçu Global</button>
+          <select id="statsPreviewMetric">
+            <option value="uptime">Temps regardé</option>
+            <option value="level">Niveau</option>
+            <option value="messages">Messages</option>
+            <option value="currency">Monnaie</option>
+            <option value="subs">Abonnés</option>
+          </select>
+          <select id="statsPreviewPeriod">
+            <option value="global">Global</option>
+            <option value="week">Semaine</option>
+            <option value="session">Session</option>
+            <option value="month">Mois</option>
+          </select>
+          <button type="button" id="statsPreviewBtn">🔍 Voir</button>
         </div>
         <table class="data-table" id="statsPreviewTable">
-          <thead><tr><th>#</th><th>Viewer</th><th>Niveau</th><th>Temps</th><th>Messages</th><th>Abonné</th></tr></thead>
+          <thead><tr><th>#</th><th>Viewer</th><th>Valeur</th><th>Abonné</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
 
-      <p class="hint">Astuce : ajoute <code>?period=week</code>, <code>?period=month</code> ou <code>?period=global</code> à l'URL de l'overlay pour figer une période sans rotation automatique.</p>
+      <p class="hint">Astuce : ajoute <code>?metric=uptime&period=week</code> (par exemple) à l'URL de l'overlay pour figer un onglet précis sans rotation automatique.</p>
     </section>
 
     <!-- === Overlays === -->

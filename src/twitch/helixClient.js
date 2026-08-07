@@ -211,6 +211,22 @@ async function getAllSubscribers(channel, broadcasterId) {
   return logins;
 }
 
+/** Récupère les photos de profil Twitch pour une liste de logins (par lot, jusqu'à 100 à la fois). */
+async function getUsersInfo(logins) {
+  if (!logins || logins.length === 0) return [];
+  const token = await getAppAccessToken();
+  try {
+    const { data } = await axios.get('https://api.twitch.tv/helix/users', {
+      headers: helixHeaders(token),
+      params: new URLSearchParams(logins.slice(0, 100).map((l) => ['login', l]))
+    });
+    return data.data; // [{ login, profile_image_url, ... }]
+  } catch (err) {
+    console.error('[Twitch] Erreur récupération infos utilisateurs :', err.response?.data || err.message);
+    return [];
+  }
+}
+
 module.exports = {
   getAppAccessToken,
   getUserAccessToken,
@@ -223,5 +239,6 @@ module.exports = {
   getChannelFollowers,
   createClip,
   getClipInfo,
-  getAllSubscribers
+  getAllSubscribers,
+  getUsersInfo
 };

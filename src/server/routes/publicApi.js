@@ -54,13 +54,16 @@ router.get('/achievements', async (req, res) => {
   res.json(state || { hasAchievements: false });
 });
 
-// Overlay "stats viewers" : classement + réglages d'affichage pour la période demandée
+// Overlay "stats viewers" : classement + réglages d'affichage pour la métrique/période demandées
 router.get('/viewerstats', async (req, res) => {
-  const period = ['week', 'month', 'global'].includes(req.query.period) ? req.query.period : 'week';
+  const metric = ['uptime', 'messages', 'level', 'currency', 'subs'].includes(req.query.metric) ? req.query.metric : 'uptime';
+  const period = ['week', 'month', 'session', 'global'].includes(req.query.period) ? req.query.period : 'global';
   const settings = await Settings.findOne({ channel: CHANNEL });
-  const leaderboard = await statsManager.getLeaderboard(CHANNEL, period, settings?.statsOverlay?.topCount || 10);
+  const leaderboard = await statsManager.getLeaderboard(CHANNEL, metric, period, settings?.statsOverlay?.topCount || 10);
   res.json({
+    metric,
     period,
+    pointsName: settings?.pointsName || 'points',
     settings: settings?.statsOverlay || {},
     leaderboard
   });
