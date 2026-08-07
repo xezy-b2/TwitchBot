@@ -85,12 +85,32 @@
 
   /* --- Podium --- */
   .podium {
+    position: relative;
     display: flex;
     align-items: flex-end;
     justify-content: center;
     gap: 8px;
     padding: 28px 10px 10px;
+    overflow: hidden;
   }
+  .podium-bg {
+    position: absolute;
+    inset: -12px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px) brightness(0.55);
+    z-index: 0;
+  }
+  .podium-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .podium-slot { position: relative; z-index: 1; }
   .podium-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .podium-slot.first { transform: translateY(-10px); }
 
@@ -192,7 +212,10 @@
     </div>
 
     <div class="tabs" id="metricTabs"></div>
-    <div id="podium" class="podium"></div>
+    <div id="podium" class="podium">
+      <div class="podium-bg" id="podiumBg"></div>
+      <div class="podium-content" id="podiumContent"></div>
+    </div>
     <div id="list" class="list"></div>
     <div class="period-tabs" id="periodTabs"></div>
   </div>
@@ -214,7 +237,8 @@
     const titleEl = document.getElementById('title');
     const subtitleEl = document.getElementById('subtitle');
     const metricTabsEl = document.getElementById('metricTabs');
-    const podiumEl = document.getElementById('podium');
+    const podiumBgEl = document.getElementById('podiumBg');
+    const podiumContentEl = document.getElementById('podiumContent');
     const listEl = document.getElementById('list');
     const periodTabsEl = document.getElementById('periodTabs');
 
@@ -282,7 +306,8 @@
 
       const entries = data.leaderboard || [];
       if (entries.length === 0) {
-        podiumEl.innerHTML = '';
+        podiumBgEl.style.backgroundImage = 'none';
+        podiumContentEl.innerHTML = '';
         listEl.innerHTML = '<p class="empty">Aucune donnée pour le moment.</p>';
         return;
       }
@@ -293,7 +318,9 @@
       const slotClasses = ['second', 'first', 'third'];
       const slotRanks = [2, 1, 3];
 
-      podiumEl.innerHTML = slots.map((e, i) => {
+      podiumBgEl.style.backgroundImage = top3[0]?.avatarUrl ? `url(${top3[0].avatarUrl})` : 'none';
+
+      podiumContentEl.innerHTML = slots.map((e, i) => {
         if (!e) return '<div class="podium-slot"></div>';
         return `
           <div class="podium-slot ${slotClasses[i]}">
