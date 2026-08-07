@@ -166,6 +166,21 @@
     color: #777;
     font-style: italic;
   }
+
+  .goals-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .goals-pagination .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(46, 154, 92, 0.25);
+    transition: background 0.3s ease;
+  }
+  .goals-pagination .dot.active { background: var(--brg-bright); }
 </style>
 </head>
 <body>
@@ -179,6 +194,7 @@
     <div class="goals-box" id="goalsBox">
       <p class="eyebrow">Objectifs</p>
       <div id="goalsList"><p class="empty-hint">Aucun objectif défini.</p></div>
+      <div class="goals-pagination" id="goalsPagination"></div>
     </div>
   </div>
 
@@ -188,9 +204,14 @@
     const timerValueEl = document.getElementById('timerValue');
     const timerStatusEl = document.getElementById('timerStatus');
     const goalsList = document.getElementById('goalsList');
+    const goalsPaginationEl = document.getElementById('goalsPagination');
 
     let totals = { subs: 0, bits: 0 };
     let goals = [];
+    let goalsPerPage = 4;
+    let goalsRotateSeconds = 8;
+    let currentPage = 0;
+    let rotateTimer = null;
 
     function formatTime(total) {
       const h = Math.floor(total / 3600);
@@ -199,12 +220,24 @@
       return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
     }
 
+    function totalPages() {
+      return Math.max(1, Math.ceil(goals.length / goalsPerPage));
+    }
+
     function renderGoals() {
       if (goals.length === 0) {
         goalsList.innerHTML = '<p class="empty-hint">Aucun objectif défini.</p>';
+        goalsPaginationEl.innerHTML = '';
         return;
       }
-      goalsList.innerHTML = goals.map((g) => {
+
+      // Sécurité : si les objectifs ont changé (ajout/suppression), on recale la page en cours
+      if (currentPage >= totalPages()) currentPage = 0;
+
+      const start = currentPage * goalsPerPage;
+      const pageGoals = goals.slice(start, start + goalsPerPage);
+
+      goalsList.innerHTML = pageGoals.map((g) => {
         const current = g.type === 'subs' ? totals.subs : totals.bits;
         const pct = Math.min(100, Math.round((current / g.target) * 100));
         const done = current >= g.target;
@@ -218,6 +251,21 @@
             <div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div>
           </div>`;
       }).join('');
+
+      const pages = totalPages();
+      goalsPaginationEl.innerHTML = pages > 1
+        ? Array.from({ length: pages }, (_, i) => `<span class="dot ${i === currentPage ? 'active' : ''}"></span>`).join('')
+        : '';
+    }
+
+    function setupGoalsRotation() {
+      clearInterval(rotateTimer);
+      if (totalPages() <= 1) return;
+
+      rotateTimer = setInterval(() => {
+        currentPage = (currentPage + 1) % totalPages();
+        renderGoals();
+      }, goalsRotateSeconds * 1000);
     }
 
     function renderTimer(secondsRemaining, isRunning) {
@@ -232,8 +280,11 @@
       .then((data) => {
         totals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
         goals = data.goals || [];
+        goalsPerPage = data.goalsPerPage || 4;
+        goalsRotateSeconds = data.goalsRotateSeconds || 8;
         renderTimer(data.secondsRemaining, data.isRunning);
         renderGoals();
+        setupGoalsRotation();
       })
       .catch(() => {});
 
@@ -245,7 +296,9 @@
 
     socket.on('subathon:goals', (data) => {
       goals = data.goals || [];
+      currentPage = 0;
       renderGoals();
+      setupGoalsRotation();
     });
   </script>
 </body>
