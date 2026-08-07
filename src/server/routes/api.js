@@ -132,6 +132,13 @@ router.delete('/subathon/goals/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Navigation manuelle des pages d'objectifs sur l'overlay (flèches du dashboard)
+router.post('/subathon/goals/navigate', (req, res) => {
+  const direction = req.body.direction === 'prev' ? 'prev' : 'next';
+  if (req.app.locals.io) req.app.locals.io.emit('subathon:goals:navigate', { direction });
+  res.json({ ok: true });
+});
+
 // --- Stats ---
 router.get('/stats/leaderboard', async (req, res) => {
   const top = await getLeaderboard(CHANNEL, 20);
