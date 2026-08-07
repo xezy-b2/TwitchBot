@@ -386,6 +386,16 @@ document.getElementById('addMinutesBtn').addEventListener('click', async () => {
   document.getElementById('addMinutesInput').value = '';
 });
 
+function navigateGoalsPage(direction) {
+  fetch('/api/subathon/goals/navigate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ direction })
+  });
+}
+document.getElementById('goalsPrevBtn').addEventListener('click', () => navigateGoalsPage('prev'));
+document.getElementById('goalsNextBtn').addEventListener('click', () => navigateGoalsPage('next'));
+
 socket.on('subathon:update', (data) => {
   document.getElementById('subathonDisplay').textContent = formatSeconds(data.secondsRemaining);
   currentTotals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
