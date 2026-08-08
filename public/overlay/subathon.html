@@ -230,7 +230,13 @@
       return Math.max(1, Math.ceil(goals.length / goalsPerPage));
     }
 
+    // Hauteur d'une ligne d'objectif (mesurée sur le CSS actuel) : garde une hauteur de
+    // boîte constante même si la dernière page a moins d'objectifs que les autres.
+    const GOAL_ROW_HEIGHT_PX = 56;
+
     function renderGoals() {
+      goalsList.style.minHeight = `${goalsPerPage * GOAL_ROW_HEIGHT_PX}px`;
+
       if (goals.length === 0) {
         goalsList.innerHTML = '<p class="empty-hint">Aucun objectif défini.</p>';
         goalsPaginationEl.innerHTML = '';
