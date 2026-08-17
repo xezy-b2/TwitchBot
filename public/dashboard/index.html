@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Bot Twitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/dashboard/css/style.css" />
+</head>
+<body>
+  <header class="topbar-v2">
+    <button id="sidebarToggleBtn" class="topbar-brand-btn" title="Afficher/masquer le menu">
+      <img class="brand-icon brand-logo" src="/dashboard/img/logo-ab.png" alt="AmbriBot" />
+      <span class="brand-text">
+        <span class="brand-name">AMBRI<span class="brand-bot" id="brandBotWord">.BOT</span></span>
+        <span class="brand-sub">Panel de streaming</span>
+      </span>
+      <span class="collapse-arrow" id="collapseArrow">◀</span>
+    </button>
+
+    <div class="topbar-right">
+      <div class="theme-switcher" id="themeSwitcher">
+        <button id="themeToggleBtn" class="icon-btn" title="Mode sombre/clair"><span id="themeToggleIcon">🌙</span></button>
+        <button id="paletteBtn" class="icon-btn palette-btn" title="Personnaliser les couleurs">🎨</button>
+
+        <div id="colorPickerPanel" class="color-picker-panel">
+          <p class="color-panel-title">Couleur du thème</p>
+          <div class="color-swatches">
+            <button type="button" class="swatch swatch-reset" id="colorResetBtn" title="Réinitialiser">↺</button>
+            <button type="button" class="swatch" data-color="#8B5CF6" style="background:#8B5CF6; color:#8B5CF6"></button>
+            <button type="button" class="swatch" data-color="#22C55E" style="background:#22C55E; color:#22C55E"></button>
+            <button type="button" class="swatch" data-color="#14B8A6" style="background:#14B8A6; color:#14B8A6"></button>
+            <button type="button" class="swatch" data-color="#EC4899" style="background:#EC4899; color:#EC4899"></button>
+            <button type="button" class="swatch" data-color="#F59E0B" style="background:#F59E0B; color:#F59E0B"></button>
+            <button type="button" class="swatch" data-color="#EF4444" style="background:#EF4444; color:#EF4444"></button>
+          </div>
+          <div class="color-panel-divider"></div>
+          <button type="button" class="color-custom-row" id="colorCustomToggle">
+            <span>Personnalisée</span>
+            <span class="color-custom-control">
+              <span class="color-custom-swatch" id="colorCustomSwatch"></span>
+              <span id="colorCustomHex">#2E9A5C</span>
+              <span class="chevron">▾</span>
+            </span>
+          </button>
+
+          <div class="custom-picker-popup" id="customPickerPopup">
+            <div class="sv-square" id="svSquare">
+              <div class="sv-handle" id="svHandle"></div>
+            </div>
+            <div class="hue-slider" id="hueSlider">
+              <div class="hue-handle" id="hueHandle"></div>
+            </div>
+            <div class="picker-fields">
+              <div class="field field-hex"><input type="text" id="fieldHex" maxlength="7" /><label>HEX</label></div>
+              <div class="field"><input type="number" id="fieldR" min="0" max="255" /><label>R</label></div>
+              <div class="field"><input type="number" id="fieldG" min="0" max="255" /><label>G</label></div>
+              <div class="field"><input type="number" id="fieldB" min="0" max="255" /><label>B</label></div>
+            </div>
+            <div class="picker-actions">
+              <button type="button" id="eyedropperBtn" class="picker-icon-btn" title="Pipette">💧</button>
+              <button type="button" id="pickerCancelBtn" class="btn-secondary">Annuler</button>
+              <button type="button" id="pickerChooseBtn">✓ Choisir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-actions sidebar-card">
+        <a href="/auth/logout" class="icon-logout-btn" title="Déconnexion"><span>⏻</span></a>
+        <div id="twitchAccountCard">
+          <button id="twitchConnectBtn" class="btn-twitch">Connecter Twitch</button>
+        </div>
+      </div>
+
+      <nav class="tabs sidebar-card">
+        <button class="tab-btn active" data-tab="commands"><span class="tab-icon">💬</span> Commandes</button>
+        <button class="tab-btn" data-tab="points"><span class="tab-icon">🎲</span> Points & Gamble</button>
+        <button class="tab-btn" data-tab="alerts"><span class="tab-icon">🔔</span> Alertes</button>
+        <button class="tab-btn" data-tab="subathon"><span class="tab-icon">⏱️</span> Subathon</button>
+        <button class="tab-btn" data-tab="leaderboard"><span class="tab-icon">🏆</span> Classement</button>
+        <button class="tab-btn" data-tab="extras"><span class="tab-icon">🧩</span> Extras</button>
+        <button class="tab-btn" data-tab="viewerstats"><span class="tab-icon">📊</span> Stats Viewers</button>
+        <button class="tab-btn" data-tab="overlays"><span class="tab-icon">🖥️</span> Overlays (OBS)</button>
+      </nav>
+    </aside>
+
+    <main>
+    <!-- === Commandes personnalisées === -->
+    <section id="tab-commands" class="tab-content active">
+      <div class="section-header">
+        <div class="section-icon">💬</div>
+        <div>
+          <h2>Commandes personnalisées</h2>
+          <p class="section-desc">Crée, modifie ou supprime les commandes que tes viewers peuvent utiliser en chat.</p>
+        </div>
+      </div>
+      <form id="commandForm" class="card">
+        <input type="hidden" id="commandId" />
+        <div class="row">
+          <input id="cmdName" placeholder="nom (sans !)" required />
+          <select id="cmdLevel">
+            <option value="everyone">Tout le monde</option>
+            <option value="subscriber">Abonnés</option>
+            <option value="vip">VIP</option>
+            <option value="moderator">Modérateurs</option>
+            <option value="broadcaster">Broadcaster</option>
+          </select>
+          <input id="cmdCooldown" type="number" placeholder="Cooldown (s)" value="5" />
+          <input id="cmdRestrictedUser" placeholder="Restreindre à un pseudo (optionnel)" />
+        </div>
+        <div class="row">
+          <label>Type de réponse
+            <select id="cmdType">
+              <option value="text">Texte simple</option>
+              <option value="voice">Vocale (TTS)</option>
+              <option value="sound">Son (MP3 uploadé)</option>
+            </select>
+          </label>
+          <label id="cmdSoundWrapper" class="hidden">Ajouter un ou plusieurs MP3
+            <input id="cmdSoundFile" type="file" accept="audio/*" multiple />
+          </label>
+          <label id="cmdVolumeWrapper" class="hidden">Volume (<span id="cmdVolumeValue">100</span>%)
+            <input id="cmdVolume" type="range" min="0" max="100" value="100" />
+          </label>
+        </div>
+        <div id="cmdSoundListWrapper" class="hidden">
+          <p class="hint">Sons attachés à cette commande (un est choisi au hasard à chaque déclenchement) :</p>
+          <ul id="cmdSoundList" class="sound-list"></ul>
+        </div>
+        <p class="hint">Laisse "Restreindre à un pseudo" vide pour que tout le monde (selon le niveau choisi) puisse utiliser la commande.</p>
+        <div id="cmdResponseWrapper">
+          <textarea id="cmdResponse" placeholder="Réponse... utilise {user} {channel} {args}"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit">💾 Enregistrer</button>
+          <button type="button" id="cmdCancelBtn" class="btn-secondary">Annuler</button>
+        </div>
+      </form>
+      <table class="data-table" id="commandsTable">
+        <thead><tr><th>Nom</th><th>Réponse</th><th>Niveau</th><th>Restreint à</th><th>Cooldown</th><th>Type</th><th>Actif</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- === Points & Gamble === -->
+    <section id="tab-points" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">🎲</div>
+        <div>
+          <h2>Points & Gamble</h2>
+          <p class="section-desc">Configure la monnaie du chat, les gains passifs et les règles du pari.</p>
+        </div>
+      </div>
+      <form id="settingsForm" class="card">
+        <label>Nom de la monnaie <input id="pointsName" /></label>
+        <label>Points gagnés passivement <input id="pointsPerInterval" type="number" /></label>
+        <label>Toutes les X minutes <input id="intervalMinutes" type="number" /></label>
+
+        <h3>Gamble (pari)</h3>
+        <label>Chance de gagner (%) — ex: 40 = ratio 60/40, 30 = ratio 70/30
+          <input id="gambleWinChance" type="number" min="1" max="99" />
+        </label>
+        <label>Mise minimum <input id="gambleMinBet" type="number" /></label>
+        <label>Cooldown gamble (s) <input id="gambleCooldown" type="number" /></label>
+
+        <button type="submit">💾 Enregistrer les réglages</button>
+      </form>
+    </section>
+
+    <!-- === Alertes === -->
+    <section id="tab-alerts" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">🔔</div>
+        <div>
+          <h2>Alertes Follow / Sub</h2>
+          <p class="section-desc">Personnalise les messages et sons déclenchés par les événements Twitch.</p>
+        </div>
+      </div>
+      <form id="alertsForm" class="card">
+        <label>Message follow <input id="followMessage" /></label>
+        <div class="sound-row" data-alert-type="follow">
+          <input type="file" accept="audio/*" class="alert-sound-file" />
+          <span class="alert-sound-current hint"></span>
+          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        </div>
+
+        <label>Message sub <input id="subMessage" /></label>
+        <div class="sound-row" data-alert-type="sub">
+          <input type="file" accept="audio/*" class="alert-sound-file" />
+          <span class="alert-sound-current hint"></span>
+          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        </div>
+
+        <label>Message resub <input id="resubMessage" /></label>
+        <div class="sound-row" data-alert-type="resub">
+          <input type="file" accept="audio/*" class="alert-sound-file" />
+          <span class="alert-sound-current hint"></span>
+          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        </div>
+
+        <label>Message gift sub <input id="giftSubMessage" /></label>
+        <div class="sound-row" data-alert-type="giftsub">
+          <input type="file" accept="audio/*" class="alert-sound-file" />
+          <span class="alert-sound-current hint"></span>
+          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        </div>
+
+        <label>Message cheer/bits <input id="cheerMessage" /></label>
+        <div class="sound-row" data-alert-type="cheer">
+          <input type="file" accept="audio/*" class="alert-sound-file" />
+          <span class="alert-sound-current hint"></span>
+          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        </div>
+
+        <label>Message succès Steam débloqué <input id="achievementMessage" /></label>
+        <p class="hint">Variables : {game} {unlocked} {total}. Pas de son pour ce type d'alerte.</p>
+
+        <label>Message auto-shoutout raid <input id="raidMessage" /></label>
+        <p class="hint">Variables : {raider} {viewers} {game}. Pas de son pour ce type d'alerte non plus.</p>
+
+        <label>Message début train de la hype <input id="hypeTrainBeginMessage" /></label>
+        <label>Message passage de niveau <input id="hypeTrainLevelUpMessage" /></label>
+        <label>Message "15 secondes restantes" <input id="hypeTrainEndingSoonMessage" /></label>
+        <label>Message fin du train (résumé) <input id="hypeTrainEndMessage" /></label>
+        <p class="hint">Variables : {level} {goal} {total} {topContributor} {topContributorTotal}. Pas de son sur ces alertes non plus.</p>
+
+        <label class="checkbox"><input id="soundEnabled" type="checkbox" /> Sons activés sur l'overlay</label>
+        <label>Volume des sons d'alerte (<span id="alertVolumeValue">100</span>%)
+          <input id="alertVolume" type="range" min="0" max="100" value="100" />
+        </label>
+        <button type="submit">💾 Enregistrer les alertes</button>
+      </form>
+      <p class="hint">Variables disponibles : {user} {tier} {months} {recipient} {bits} {totalFollowers} {followsThisStream}</p>
+      <p class="hint">{totalFollowers} et {followsThisStream} ne sont utilisables que dans le message de follow.</p>
+      <p class="hint">Un son MP3 est optionnel pour chaque type d'alerte : il est joué sur l'overlay en plus du message.</p>
+    </section>
+
+    <!-- === Subathon === -->
+    <section id="tab-subathon" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">⏱️</div>
+        <div>
+          <h2>Subathon</h2>
+          <p class="section-desc">Pilote le chronomètre et les objectifs affichés sur l'overlay.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div id="subathonDisplay" class="subathon-display">--:--:--</div>
+        <div class="row">
+          <button id="subathonStartBtn">▶️ Démarrer</button>
+          <button id="subathonPauseBtn">⏸️ Pause</button>
+          <button id="subathonResetBtn" class="btn-danger">🔄 Réinitialiser</button>
+        </div>
+        <div class="row">
+          <input id="addMinutesInput" type="number" placeholder="Minutes à ajouter" />
+          <button id="addMinutesBtn">➕ Ajouter du temps</button>
+        </div>
+      </div>
+      <form id="subathonConfigForm" class="card">
+        <h3>Configuration (temps ajouté automatiquement)</h3>
+        <label class="checkbox"><input id="subathonEnabled" type="checkbox" /> Activer le subathon automatique</label>
+        <label>Secondes / sub Tier 1 <input id="secondsPerSub" type="number" /></label>
+        <label>Secondes / sub Tier 2 <input id="secondsPerSubT2" type="number" /></label>
+        <label>Secondes / sub Tier 3 <input id="secondsPerSubT3" type="number" /></label>
+        <label>Secondes / sub cadeau <input id="secondsPerGiftSub" type="number" /></label>
+        <label>Secondes / 100 bits <input id="secondsPer100Bits" type="number" /></label>
+        <label>Durée max en secondes (0 = illimité) <input id="maxSeconds" type="number" /></label>
+        <div class="row">
+          <label style="flex:1;">Objectifs par page sur l'overlay (3 à 5) <input id="goalsPerPage" type="number" min="3" max="5" /></label>
+          <label style="flex:1;">Rotation entre pages (secondes) <input id="goalsRotateSeconds" type="number" min="3" /></label>
+        </div>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+
+      <div class="card">
+        <h3>🎯 Objectifs (affichés sur l'overlay)</h3>
+        <p class="hint">Cumul de subs ou de bits reçus PENDANT le subathon en cours. Ils se réinitialisent avec "Réinitialiser".</p>
+        <form id="goalForm" class="row">
+          <input id="goalLabel" placeholder="Nom de l'objectif (ex: Cosplay Mario)" required />
+          <select id="goalType">
+            <option value="subs">Subs cumulés</option>
+            <option value="bits">Bits cumulés</option>
+          </select>
+          <input id="goalTarget" type="number" min="1" placeholder="Objectif (ex: 50)" required />
+          <button type="submit">➕ Ajouter</button>
+        </form>
+        <table class="data-table" id="goalsTable">
+          <thead><tr><th>Objectif</th><th>Type</th><th>Cible</th><th>Progression</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="row">
+          <button type="button" id="goalsPrevBtn">◀ Page précédente (overlay)</button>
+          <button type="button" id="goalsNextBtn">Page suivante (overlay) ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- === Classement === -->
+    <section id="tab-leaderboard" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">🏆</div>
+        <div>
+          <h2>Classement des points</h2>
+          <p class="section-desc">Le top des viewers selon leur solde de points actuel.</p>
+        </div>
+      </div>
+      <table class="data-table" id="leaderboardTable">
+        <thead><tr><th>#</th><th>Utilisateur</th><th>Points</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- === Extras === -->
+    <section id="tab-extras" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">🧩</div>
+        <div>
+          <h2>Messages automatiques</h2>
+          <p class="section-desc">Envoyés tout seuls en chat, uniquement si le chat a été actif récemment.</p>
+        </div>
+      </div>
+      <form id="autoMessageForm" class="card">
+        <div class="row">
+          <input id="autoMessageText" placeholder="Texte du message (ex: Rejoins le Discord : ...)" style="flex: 2;" required />
+          <input id="autoMessageInterval" type="number" min="1" placeholder="Toutes les X minutes" value="30" />
+          <button type="submit">➕ Ajouter</button>
+        </div>
+      </form>
+      <table class="data-table" id="autoMessagesTable">
+        <thead><tr><th>Message</th><th>Intervalle</th><th>Actif</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="subsection-header">
+        <div class="section-icon">🎯</div>
+        <h2>Objectif long terme</h2>
+      </div>
+      <p class="hint">Indépendant du subathon : ne se réinitialise jamais automatiquement. Idéal pour un objectif sur la durée (ex: abonnés du mois).</p>
+      <form id="longTermGoalForm" class="card">
+        <div class="row">
+          <input id="ltgLabel" placeholder="Nom de l'objectif (ex: Objectif abonnés du mois)" style="flex: 2;" />
+          <select id="ltgType">
+            <option value="subs">Subs cumulés (auto)</option>
+            <option value="bits">Bits cumulés (auto)</option>
+            <option value="follows">Follows cumulés (auto)</option>
+            <option value="manual">Manuel</option>
+          </select>
+          <input id="ltgTarget" type="number" min="1" placeholder="Cible" />
+        </div>
+        <button type="submit">💾 Enregistrer l'objectif</button>
+      </form>
+      <div class="card">
+        <p class="hint">Progression actuelle : <span id="ltgCurrentDisplay">0</span></p>
+        <div class="row">
+          <input id="ltgCurrentInput" type="number" min="0" placeholder="Définir la progression manuellement" />
+          <button id="ltgCurrentSaveBtn">💾 Mettre à jour</button>
+        </div>
+      </div>
+
+      <div class="subsection-header">
+        <div class="section-icon">🎵</div>
+        <h2>Spotify (overlay Now Playing)</h2>
+      </div>
+      <div class="card">
+        <p class="hint" id="spotifyStatus">Statut : vérification...</p>
+        <button id="spotifyConnectBtn" class="btn-twitch">Connecter Spotify</button>
+      </div>
+
+      <div class="subsection-header">
+        <div class="section-icon">🕹️</div>
+        <h2>Steam (suivi des succès)</h2>
+      </div>
+      <p class="hint">La catégorie Twitch est reliée automatiquement à un jeu Steam par recherche du nom. Si ça se trompe de jeu, corrige l'AppID ci-dessous.</p>
+      <form id="steamSettingsForm" class="card">
+        <label>SteamID64 (le tien)
+          <input id="steamId64" placeholder="ex: 76561198012345678" />
+        </label>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+      <div class="card">
+        <p class="hint">Jeu actuellement suivi : <span id="steamCurrentGame">—</span></p>
+        <p class="hint">Succès : <span id="steamCurrentCount">—</span></p>
+        <div class="row">
+          <input id="steamCorrectCategory" placeholder="Catégorie Twitch concernée" />
+          <input id="steamCorrectAppId" type="number" placeholder="AppID Steam correct" />
+          <button id="steamCorrectBtn">🔧 Corriger</button>
+        </div>
+        <p class="hint">Trouve l'AppID d'un jeu dans l'URL de sa page Steam (store.steampowered.com/app/<b>AppID</b>/...).</p>
+      </div>
+
+      <div class="subsection-header">
+        <div class="section-icon">🎬</div>
+        <h2>Discord (envoi automatique des clips)</h2>
+      </div>
+      <p class="hint">La commande <b>!clip</b> crée un clip Twitch et l'envoie automatiquement sur ce webhook Discord, avec un embed personnalisé.</p>
+      <form id="discordSettingsForm" class="card">
+        <label>URL du webhook Discord
+          <input id="discordWebhookUrl" placeholder="https://discord.com/api/webhooks/..." />
+        </label>
+        <label>Titre de l'embed <input id="discordEmbedTitle" /></label>
+        <label>Description de l'embed <input id="discordEmbedDescription" /></label>
+        <div class="row">
+          <label style="flex:1;">Couleur (hex) <input id="discordEmbedColor" placeholder="#2E9A5C" /></label>
+          <label style="flex:2;">Footer (optionnel) <input id="discordEmbedFooter" /></label>
+        </div>
+        <p class="hint">Variables disponibles : {clipper} {broadcaster} {game} {title}</p>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+    </section>
+
+    <!-- === Stats Viewers === -->
+    <section id="tab-viewerstats" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div>
+          <h2>Overlay Stats Viewers</h2>
+          <p class="section-desc">Un seul overlay avec des onglets Niveau / Temps regardé / Messages / Monnaie / Abonnés, par Semaine / Mois / Session / Global.</p>
+        </div>
+      </div>
+      <form id="statsOverlayForm" class="card">
+        <label>Titre affiché <input id="statsTitle" /></label>
+        <div class="row">
+          <label style="flex:1;">Nombre de viewers affichés <input id="statsTopCount" type="number" min="3" max="25" /></label>
+          <label style="flex:1;">Onglet affiché par défaut
+            <select id="statsDefaultMetric">
+              <option value="uptime">Temps regardé</option>
+              <option value="level">Niveau</option>
+              <option value="messages">Messages</option>
+              <option value="currency">Monnaie (points)</option>
+              <option value="subs">Abonnés</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint">Onglets visibles sur l'overlay :</p>
+        <div class="row">
+          <label class="checkbox"><input id="statsShowLevelTab" type="checkbox" /> Niveau</label>
+          <label class="checkbox"><input id="statsShowUptimeTab" type="checkbox" /> Temps regardé</label>
+          <label class="checkbox"><input id="statsShowMessagesTab" type="checkbox" /> Messages</label>
+          <label class="checkbox"><input id="statsShowCurrencyTab" type="checkbox" /> Monnaie</label>
+          <label class="checkbox"><input id="statsShowSubsTab" type="checkbox" /> Abonnés</label>
+        </div>
+        <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique entre les périodes (Semaine/Mois/Session/Global)</label>
+        <label>Intervalle de rotation (secondes) <input id="statsRotateSeconds" type="number" min="5" /></label>
+        <button type="submit">💾 Enregistrer</button>
+      </form>
+
+      <div class="card">
+        <p class="hint">Aperçu :</p>
+        <div class="row">
+          <select id="statsPreviewMetric">
+            <option value="uptime">Temps regardé</option>
+            <option value="level">Niveau</option>
+            <option value="messages">Messages</option>
+            <option value="currency">Monnaie</option>
+            <option value="subs">Abonnés</option>
+          </select>
+          <select id="statsPreviewPeriod">
+            <option value="global">Global</option>
+            <option value="week">Semaine</option>
+            <option value="session">Session</option>
+            <option value="month">Mois</option>
+          </select>
+          <button type="button" id="statsPreviewBtn">🔍 Voir</button>
+        </div>
+        <table class="data-table" id="statsPreviewTable">
+          <thead><tr><th>#</th><th>Viewer</th><th>Valeur</th><th>Abonné</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <p class="hint">Astuce : ajoute <code>?metric=uptime&period=week</code> (par exemple) à l'URL de l'overlay pour figer un onglet précis sans rotation automatique.</p>
+    </section>
+
+    <!-- === Overlays === -->
+    <section id="tab-overlays" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon">🖥️</div>
+        <div>
+          <h2>Liens Overlays</h2>
+          <p class="section-desc">À ajouter comme Browser Source dans OBS.</p>
+        </div>
+      </div>
+      <ul class="overlay-links">
+        <li>🔔 Alertes follow/sub : <code id="overlayAlertsUrl"></code></li>
+        <li>⏱️ Subathon : <code id="overlaySubathonUrl"></code></li>
+        <li>🔊 Commandes vocales (TTS) : <code id="overlayTtsUrl"></code></li>
+        <li>🎉 Dernier follow/sub (permanent) : <code id="overlayLastEventsUrl"></code></li>
+        <li>🎯 Objectif long terme : <code id="overlayGoalUrl"></code></li>
+        <li>🎵 Now Playing (Spotify) : <code id="overlayNowPlayingUrl"></code></li>
+        <li>🏆 Succès Steam : <code id="overlayAchievementsUrl"></code></li>
+        <li>📊 Stats Viewers : <code id="overlayViewerStatsUrl"></code></li>
+      </ul>
+      <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
+    </section>
+  </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/dashboard/js/dashboard.js"></script>
+</body>
+</html>

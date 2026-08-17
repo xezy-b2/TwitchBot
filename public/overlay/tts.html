@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay TTS & Soundboard</title>
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+  }
+  #status {
+    position: fixed;
+    bottom: 8px;
+    left: 8px;
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+  <!-- Overlay invisible : lit les commandes vocales (TTS) et joue les sons (soundboard) envoyés par le bot -->
+  <div id="status">TTS prêt</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const statusEl = document.getElementById('status');
+
+    // Certains navigateurs nécessitent une interaction pour débloquer l'audio :
+    // clique une fois sur la page overlay dans OBS (clic droit > Interagir) si le TTS ne parle pas.
+    document.body.addEventListener('click', () => {
+      const unlock = new SpeechSynthesisUtterance('');
+      window.speechSynthesis.speak(unlock);
+    });
+
+    const queue = [];
+    let speaking = false;
+
+    function playNext() {
+      if (speaking || queue.length === 0) return;
+      speaking = true;
+      const item = queue.shift();
+
+      if (item.kind === 'sound') {
+        const audio = new Audio(item.url);
+        audio.volume = Math.max(0, Math.min(100, item.volume ?? 100)) / 100;
+        statusEl.textContent = `🎵 ${item.url} (vol ${item.volume ?? 100}%)`;
+        audio.onended = () => { speaking = false; playNext(); };
+        audio.onerror = () => { speaking = false; playNext(); };
+        audio.play().catch(() => { speaking = false; playNext(); });
+        return;
+      }
+
+      // item.kind === 'tts'
+      const utterance = new SpeechSynthesisUtterance(item.text);
+      utterance.lang = 'fr-FR';
+
+      if (item.voiceName) {
+        const voice = window.speechSynthesis.getVoices().find(v => v.name === item.voiceName);
+        if (voice) utterance.voice = voice;
+      }
+
+      utterance.onend = () => { speaking = false; playNext(); };
+      utterance.onerror = () => { speaking = false; playNext(); };
+
+      statusEl.textContent = `🔊 ${item.text}`;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    socket.on('tts', (data) => {
+      queue.push({ kind: 'tts', ...data });
+      playNext();
+    });
+
+    socket.on('sound', (data) => {
+      queue.push({ kind: 'sound', ...data });
+      playNext();
+    });
+  </script>
+</body>
+</html>
