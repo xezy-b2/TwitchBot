@@ -67,6 +67,13 @@ const settingsSchema = new mongoose.Schema({
     rotateSeconds: { type: Number, default: 15, min: 5 }
   },
 
+  // --- Fonds personnalisés des boîtes sur certains overlays ---
+  overlayBackgrounds: {
+    subathon: { type: String, default: null },
+    goal: { type: String, default: null },
+    lastEvents: { type: String, default: null }
+  },
+
   // --- Subathon ---
   subathon: {
     enabled: { type: Boolean, default: false },

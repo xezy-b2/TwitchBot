@@ -40,12 +40,23 @@
   /* ============ BLOC CHRONO ============ */
   .timer-box {
     position: relative;
-    background: var(--ink);
+    background-color: var(--ink);
+    background-size: cover;
+    background-position: center;
     border: 2px solid var(--brg);
     border-radius: 14px;
     padding: 18px 22px 20px;
     overflow: hidden;
     box-shadow: 0 0 0 1px rgba(46, 154, 92, 0.15), 0 18px 40px rgba(0,0,0,0.55);
+  }
+
+  /* Voile sombre appliqué au-dessus d'un éventuel fond personnalisé, pour garder le texte lisible */
+  .timer-box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8,9,10,0.55) 0%, rgba(8,9,10,0.85) 100%);
+    pointer-events: none;
   }
 
   /* Filet de livrée façon course automobile, discret, en coin */
@@ -103,13 +114,27 @@
 
   /* ============ BLOC OBJECTIFS ============ */
   .goals-box {
-    background: var(--ink);
+    position: relative;
+    background-color: var(--ink);
+    background-size: cover;
+    background-position: center;
     border: 1px solid rgba(46, 154, 92, 0.4);
     border-radius: 14px;
     padding: 16px 20px 18px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
     perspective: 900px;
   }
+
+  .goals-box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8,9,10,0.55) 0%, rgba(8,9,10,0.85) 100%);
+    pointer-events: none;
+  }
+
+  .goals-box > * { position: relative; z-index: 1; }
 
   #goalsList {
     transition: transform 0.32s ease, opacity 0.32s ease;
@@ -207,6 +232,8 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    const timerBoxEl = document.querySelector('.timer-box');
+    const goalsBoxEl = document.getElementById('goalsBox');
     const timerValueEl = document.getElementById('timerValue');
     const timerStatusEl = document.getElementById('timerStatus');
     const goalsList = document.getElementById('goalsList');
@@ -318,6 +345,11 @@
         goals = data.goals || [];
         goalsPerPage = data.goalsPerPage || 4;
         goalsRotateSeconds = data.goalsRotateSeconds || 8;
+        if (data.backgroundUrl) {
+          const bg = `url(${data.backgroundUrl})`;
+          timerBoxEl.style.backgroundImage = bg;
+          goalsBoxEl.style.backgroundImage = bg;
+        }
         renderTimer(data.secondsRemaining, data.isRunning);
         renderGoals();
         setupGoalsRotation();

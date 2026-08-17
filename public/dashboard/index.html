@@ -498,6 +498,33 @@
         <li>📊 Stats Viewers : <code id="overlayViewerStatsUrl"></code></li>
       </ul>
       <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
+
+      <div class="subsection-header">
+        <div class="section-icon">🖼️</div>
+        <h2>Fonds personnalisés</h2>
+      </div>
+      <p class="hint">Remplace le fond noir des boîtes par une image (avec un voile sombre automatique pour garder le texte lisible). Disponible pour l'instant sur Subathon, Objectif long terme et Dernier follow/sub.</p>
+
+      <div class="card" id="overlayBackgroundsCard">
+        <div class="bg-upload-row" data-target="subathon">
+          <span class="bg-upload-label">⏱️ Subathon</span>
+          <input type="file" accept="image/*" class="bg-upload-file" />
+          <span class="bg-upload-status hint">Aucune image</span>
+          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+        </div>
+        <div class="bg-upload-row" data-target="goal">
+          <span class="bg-upload-label">🎯 Objectif long terme</span>
+          <input type="file" accept="image/*" class="bg-upload-file" />
+          <span class="bg-upload-status hint">Aucune image</span>
+          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+        </div>
+        <div class="bg-upload-row" data-target="lastEvents">
+          <span class="bg-upload-label">🎉 Dernier follow/sub</span>
+          <input type="file" accept="image/*" class="bg-upload-file" />
+          <span class="bg-upload-status hint">Aucune image</span>
+          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+        </div>
+      </div>
     </section>
   </main>
   </div>

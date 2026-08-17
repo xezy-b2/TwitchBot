@@ -21,6 +21,7 @@ function createApp() {
   app.use('/overlay', express.static(path.join(__dirname, '../../public/overlay')));
   // Fichiers son du soundboard : stockés en MongoDB (persistant), servis publiquement
   app.use('/sound-files', require('./routes/soundFiles'));
+  app.use('/overlay-images', require('./routes/overlayImages'));
   // API publique (sans auth) : utilisée par l'overlay OBS pour son état initial
   app.use('/public-api', require('./routes/publicApi'));
 

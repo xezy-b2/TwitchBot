@@ -24,13 +24,25 @@
     padding: 20px;
   }
   .box {
-    background: var(--ink);
+    position: relative;
+    background-color: var(--ink);
+    background-size: cover;
+    background-position: center;
     border: 1px solid rgba(46, 154, 92, 0.35);
     border-radius: 12px;
     padding: 18px 22px;
     width: 420px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    overflow: hidden;
   }
+  .box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8,9,10,0.55) 0%, rgba(8,9,10,0.85) 100%);
+    pointer-events: none;
+  }
+  .box > * { position: relative; z-index: 1; }
   .top {
     display: flex;
     justify-content: space-between;
@@ -75,6 +87,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    const boxEl = document.querySelector('.box');
     const labelEl = document.getElementById('goalLabel');
     const countEl = document.getElementById('goalCount');
     const fillEl = document.getElementById('goalFill');
@@ -88,7 +101,10 @@
 
     fetch('/public-api/longtermgoal')
       .then((res) => res.json())
-      .then(render)
+      .then((data) => {
+        if (data.backgroundUrl) boxEl.style.backgroundImage = `url(${data.backgroundUrl})`;
+        render(data);
+      })
       .catch(() => {});
 
     socket.on('longtermgoal:update', render);

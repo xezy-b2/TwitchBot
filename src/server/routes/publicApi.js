@@ -24,25 +24,32 @@ router.get('/subathon', async (req, res) => {
     totalBits: state.totalBits,
     goals,
     goalsPerPage: settings?.subathon?.goalsPerPage || 4,
-    goalsRotateSeconds: settings?.subathon?.goalsRotateSeconds || 8
+    goalsRotateSeconds: settings?.subathon?.goalsRotateSeconds || 8,
+    backgroundUrl: settings?.overlayBackgrounds?.subathon || null
   });
 });
 
 // État initial de l'overlay "dernier follower / dernier sub"
 router.get('/lastevents', async (req, res) => {
   const state = await LastEventState.findOne({ channel: CHANNEL });
+  const settings = await Settings.findOne({ channel: CHANNEL });
   res.json({
     lastFollowerName: state?.lastFollowerName || null,
     lastFollowerAt: state?.lastFollowerAt || null,
     lastSubName: state?.lastSubName || null,
-    lastSubAt: state?.lastSubAt || null
+    lastSubAt: state?.lastSubAt || null,
+    backgroundUrl: settings?.overlayBackgrounds?.lastEvents || null
   });
 });
 
 // État initial de l'overlay "objectif long terme"
 router.get('/longtermgoal', async (req, res) => {
   const goal = await longTermGoalManager.getGoal(CHANNEL);
-  res.json(goal);
+  const settings = await Settings.findOne({ channel: CHANNEL });
+  res.json({
+    ...goal.toObject(),
+    backgroundUrl: settings?.overlayBackgrounds?.goal || null
+  });
 });
 
 // État initial de l'overlay "Now Playing" (les mises à jour suivantes arrivent par socket)

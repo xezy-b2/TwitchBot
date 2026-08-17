@@ -27,7 +27,9 @@
   }
   .box {
     position: relative;
-    background: var(--ink);
+    background-color: var(--ink);
+    background-size: cover;
+    background-position: center;
     border: 1px solid rgba(46, 154, 92, 0.35);
     border-radius: 12px;
     padding: 14px 20px;
@@ -36,7 +38,16 @@
     gap: 14px;
     box-shadow: 0 10px 26px rgba(0,0,0,0.45);
     min-width: 320px;
+    overflow: hidden;
   }
+  .box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8,9,10,0.55) 0%, rgba(8,9,10,0.85) 100%);
+    pointer-events: none;
+  }
+  .box > * { position: relative; z-index: 1; }
   .box .icon { font-size: 28px; }
   .eyebrow {
     margin: 0;
@@ -82,6 +93,11 @@
       .then((data) => {
         if (data.lastFollowerName) lastFollowerEl.textContent = data.lastFollowerName;
         if (data.lastSubName) lastSubEl.textContent = data.lastSubName;
+        if (data.backgroundUrl) {
+          document.querySelectorAll('.box').forEach((box) => {
+            box.style.backgroundImage = `url(${data.backgroundUrl})`;
+          });
+        }
       })
       .catch(() => {});
 

@@ -987,6 +987,47 @@ async function loadStatsPreview() {
 
 document.getElementById('statsPreviewBtn').addEventListener('click', loadStatsPreview);
 
+// ============ FONDS PERSONNALISÉS DES OVERLAYS ============
+async function loadOverlayBackgrounds() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  const bg = s.overlayBackgrounds || {};
+
+  document.querySelectorAll('.bg-upload-row').forEach((row) => {
+    const target = row.dataset.target;
+    const url = bg[target];
+    const statusEl = row.querySelector('.bg-upload-status');
+    const removeBtn = row.querySelector('.bg-upload-remove');
+    statusEl.textContent = url ? `🖼️ ${url.split('/').pop()}` : 'Aucune image';
+    removeBtn.classList.toggle('hidden', !url);
+  });
+}
+
+document.querySelectorAll('.bg-upload-row').forEach((row) => {
+  const target = row.dataset.target;
+
+  row.querySelector('.bg-upload-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('target', target);
+    const uploadRes = await fetch('/api/overlay-backgrounds/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadRes.ok) {
+      alert(`Erreur upload : ${uploadData.error}`);
+      return;
+    }
+    e.target.value = '';
+    loadOverlayBackgrounds();
+  });
+
+  row.querySelector('.bg-upload-remove').addEventListener('click', async () => {
+    await fetch(`/api/overlay-backgrounds/${target}`, { method: 'DELETE' });
+    loadOverlayBackgrounds();
+  });
+});
+
 // --- Init ---
 loadTwitchAccountStatus();
 loadCommands();
@@ -1000,5 +1041,6 @@ loadSpotifyStatus();
 loadSteamCurrent();
 loadStatsOverlaySettings();
 loadStatsPreview();
+loadOverlayBackgrounds();
 setupOverlayLinks();
 setInterval(loadLeaderboard, 30000);
