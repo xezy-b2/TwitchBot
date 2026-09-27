@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Sondage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --ink2: #101512;
+    --track: #17201B;
+    --paper: #F3F5F1;
+    --muted: #7C948A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 20px;
+  }
+
+  .panel {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 14px;
+    width: 360px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    padding: 16px 18px 14px;
+    display: none;
+  }
+  .panel.show { display: block; }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brg-bright);
+  }
+  .eyebrow.result { color: #FFD35C; }
+
+  .question {
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--paper);
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: var(--brg-bright);
+    font-weight: 600;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .option-row {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--track);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .option-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--brg), var(--brg-bright));
+    transition: width 0.4s ease;
+    z-index: 0;
+  }
+  .option-row.winner .option-fill {
+    background: linear-gradient(90deg, #B8860B, #FFD35C);
+  }
+
+  .option-badge {
+    position: relative;
+    z-index: 1;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--paper);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .option-text {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--paper);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .option-pct {
+    position: relative;
+    z-index: 1;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--paper);
+    flex-shrink: 0;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .total-votes { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .timer { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--brg-bright); }
+
+  .progress-track { height: 4px; border-radius: 2px; background: var(--track); margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--brg-bright); width: 100%; transition: width 1s linear; }
+</style>
+</head>
+<body>
+  <div class="panel" id="panel">
+    <p class="eyebrow" id="eyebrow">Sondage</p>
+    <p class="question" id="question">—</p>
+    <p class="subtitle" id="subtitle">Tapez le numéro dans le chat pour voter</p>
+    <div class="options" id="options"></div>
+    <div class="footer">
+      <span class="total-votes" id="totalVotes">0 vote</span>
+      <span class="timer" id="timer"></span>
+    </div>
+    <div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const panel = document.getElementById('panel');
+    const eyebrowEl = document.getElementById('eyebrow');
+    const questionEl = document.getElementById('question');
+    const subtitleEl = document.getElementById('subtitle');
+    const optionsEl = document.getElementById('options');
+    const totalVotesEl = document.getElementById('totalVotes');
+    const timerEl = document.getElementById('timer');
+    const progressTrack = document.getElementById('progressTrack');
+    const progressFill = document.getElementById('progressFill');
+
+    let countdownInterval = null;
+    let hideTimeout = null;
+
+    function renderOptions(state, isResult) {
+      const maxVotes = Math.max(0, ...state.options.map((o) => o.votes));
+      optionsEl.innerHTML = state.options.map((o, i) => {
+        const isWinner = isResult && state.totalVotes > 0 && o.votes === maxVotes;
+        return `
+          <div class="option-row ${isWinner ? 'winner' : ''}">
+            <div class="option-fill" style="width:${o.percentage}%"></div>
+            <span class="option-badge">${i + 1}</span>
+            <span class="option-text">${o.text}</span>
+            <span class="option-pct">${o.votes} · ${o.percentage}%</span>
+          </div>`;
+      }).join('');
+      totalVotesEl.textContent = `${state.totalVotes} vote${state.totalVotes > 1 ? 's' : ''}`;
+    }
+
+    function startCountdown(endsAt) {
+      clearInterval(countdownInterval);
+      progressTrack.style.display = 'block';
+      const totalDuration = new Date(endsAt).getTime() - Date.now();
+
+      function tick() {
+        const remaining = Math.max(0, new Date(endsAt).getTime() - Date.now());
+        const seconds = Math.ceil(remaining / 1000);
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        progressFill.style.width = `${Math.max(0, (remaining / totalDuration) * 100)}%`;
+        if (remaining <= 0) clearInterval(countdownInterval);
+      }
+      tick();
+      countdownInterval = setInterval(tick, 1000);
+    }
+
+    function showActive(state) {
+      clearTimeout(hideTimeout);
+      panel.classList.add('show');
+      eyebrowEl.textContent = 'Sondage';
+      eyebrowEl.classList.remove('result');
+      questionEl.textContent = state.question;
+      subtitleEl.textContent = 'Tapez le numéro dans le chat pour voter';
+      subtitleEl.style.display = 'block';
+      progressTrack.style.display = 'block';
+      renderOptions(state, false);
+      if (state.endsAt) startCountdown(state.endsAt);
+    }
+
+    function showResult(state) {
+      clearInterval(countdownInterval);
+      panel.classList.add('show');
+      eyebrowEl.textContent = 'Résultat du sondage';
+      eyebrowEl.classList.add('result');
+      questionEl.textContent = state.question;
+      subtitleEl.style.display = 'none';
+      timerEl.textContent = '';
+      progressTrack.style.display = 'none';
+      renderOptions(state, true);
+
+      // Laisse le résultat affiché quelques secondes, puis masque l'overlay
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => panel.classList.remove('show'), 15000);
+    }
+
+    fetch('/public-api/poll')
+      .then((res) => res.json())
+      .then((state) => {
+        if (state.isActive) showActive(state);
+      })
+      .catch(() => {});
+
+    socket.on('poll:start', showActive);
+    socket.on('poll:update', (state) => {
+      if (panel.classList.contains('show')) renderOptions(state, false);
+    });
+    socket.on('poll:end', showResult);
+  </script>
+</body>
+</html>

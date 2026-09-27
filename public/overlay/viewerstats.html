@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Stats Viewers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brg-deep: #012B18;
+    --brg: #01532B;
+    --brg-bright: #2E9A5C;
+    --gold: #E8C24C;
+    --silver: #C7D0D4;
+    --bronze: #C98A4B;
+    --mint: #BFE3CE;
+    --ink: #08090A;
+    --ink2: #101512;
+    --track: #17201B;
+    --paper: #F3F5F1;
+    --muted: #7C948A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 10px;
+  }
+
+  .panel {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 12px;
+    width: 325px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+
+  /* --- Header --- */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, var(--brg-deep), #001a0f);
+    border-bottom: 1px solid rgba(46, 154, 92, 0.3);
+  }
+  .header .trophy { font-size: 24px; filter: drop-shadow(0 0 6px rgba(232,194,76,0.5)); }
+  .header .title { margin: 0; font-size: 17px; font-weight: 700; color: var(--paper); }
+  .header .subtitle {
+    margin: 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--brg-bright);
+  }
+
+  /* --- Onglets métrique --- */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(46, 154, 92, 0.2);
+    overflow-x: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 7px 4px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--paper); border-bottom-color: var(--brg-bright); }
+
+  /* --- Podium --- */
+  .podium {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 10px 10px;
+    overflow: hidden;
+  }
+  .podium-bg {
+    position: absolute;
+    inset: -12px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px) brightness(0.55);
+    z-index: 0;
+  }
+  .podium-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .podium-slot { position: relative; z-index: 1; }
+  .podium-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .podium-slot.first { transform: translateY(-10px); }
+
+  .avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--track);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--paper);
+  }
+  .podium-slot.first .avatar { width: 66px; height: 66px; border: 3px solid var(--gold); box-shadow: 0 0 16px rgba(232,194,76,0.5); font-size: 22px; }
+  .podium-slot.second .avatar { width: 50px; height: 50px; border: 2px solid var(--silver); font-size: 17px; }
+  .podium-slot.third .avatar { width: 50px; height: 50px; border: 2px solid var(--bronze); font-size: 17px; }
+
+  .podium-rank {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 10px;
+    color: var(--ink);
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -12px;
+    border: 2px solid var(--ink);
+  }
+  .podium-slot.first .podium-rank { background: var(--gold); }
+  .podium-slot.second .podium-rank { background: var(--silver); }
+  .podium-slot.third .podium-rank { background: var(--bronze); }
+
+  .podium-name { font-size: 13px; font-weight: 600; color: var(--paper); max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .podium-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--brg-bright);
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+
+  /* --- Liste (rang 4+) --- */
+  .list { padding: 2px 8px 8px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .list-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 8px;
+  }
+  .list-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+  .list-rank {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--brg-bright), var(--brg));
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .list-avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--track);
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paper); font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid var(--brg-bright);
+    box-shadow: 0 0 8px rgba(46, 154, 92, 0.45);
+  }
+  .list-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+  .list-name .star { color: var(--brg-bright); font-size: 11px; }
+  .list-value { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--mint); }
+
+  .empty { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* --- Onglets période --- */
+  .period-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px;
+    border-top: 1px solid rgba(46, 154, 92, 0.2);
+  }
+  .period-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 4px 9px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .period-btn.active { color: var(--ink); background: var(--brg-bright); }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="header">
+      <span class="trophy">🏆</span>
+      <div>
+        <p class="title" id="title">LeaderBoard</p>
+        <p class="subtitle" id="subtitle">UPTIME (GLOBAL)</p>
+      </div>
+    </div>
+
+    <div class="tabs" id="metricTabs"></div>
+    <div id="podium" class="podium">
+      <div class="podium-bg" id="podiumBg"></div>
+      <div class="podium-content" id="podiumContent"></div>
+    </div>
+    <div id="list" class="list"></div>
+    <div class="period-tabs" id="periodTabs"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const metricLabels = { uptime: 'UPTIME', messages: 'MSG', level: 'LEVELS', currency: 'CURRENCY', subs: 'SUBS' };
+    const periodLabels = { global: 'GLOBAL', week: 'WEEK', session: 'SESSION', month: 'MONTH' };
+    const metricOrder = ['level', 'uptime', 'messages', 'currency', 'subs'];
+    const periodOrder = ['global', 'week', 'session', 'month'];
+
+    const fixedMetric = metricOrder.includes(params.get('metric')) ? params.get('metric') : null;
+    const fixedPeriod = periodOrder.includes(params.get('period')) ? params.get('period') : null;
+
+    let currentMetric = fixedMetric || 'uptime';
+    let currentPeriod = fixedPeriod || 'global';
+
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const metricTabsEl = document.getElementById('metricTabs');
+    const podiumBgEl = document.getElementById('podiumBg');
+    const podiumContentEl = document.getElementById('podiumContent');
+    const listEl = document.getElementById('list');
+    const periodTabsEl = document.getElementById('periodTabs');
+
+    function formatValue(metric, value, pointsName) {
+      if (metric === 'level') return `Lv.${value}`;
+      if (metric === 'messages') return `${value} msg`;
+      if (metric === 'currency') return `${value} ${pointsName || 'pts'}`;
+      // uptime / subs : en heures si >= 60 min, sinon en minutes
+      return value >= 60 ? `${Math.floor(value / 60)}H` : `${value}M`;
+    }
+
+    function renderAvatar(entry, sizeClass) {
+      const initial = (entry.username || '?').charAt(0).toUpperCase();
+      if (entry.avatarUrl) {
+        return `<img class="${sizeClass}" src="${entry.avatarUrl}" alt="" />`;
+      }
+      return `<div class="${sizeClass}">${initial}</div>`;
+    }
+
+    function renderMetricTabs(settingsCfg) {
+      const visible = metricOrder.filter((m) => {
+        if (m === 'level') return settingsCfg.showLevelTab !== false;
+        if (m === 'uptime') return settingsCfg.showUptimeTab !== false;
+        if (m === 'messages') return settingsCfg.showMessagesTab !== false;
+        if (m === 'currency') return settingsCfg.showCurrencyTab !== false;
+        if (m === 'subs') return settingsCfg.showSubsTab !== false;
+        return true;
+      });
+      metricTabsEl.innerHTML = visible.map((m) =>
+        `<button class="tab-btn ${m === currentMetric ? 'active' : ''}" data-metric="${m}">${metricLabels[m]}</button>`
+      ).join('');
+      metricTabsEl.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentMetric = btn.dataset.metric;
+          fetchAndRender();
+        });
+      });
+    }
+
+    function renderPeriodTabs() {
+      const periodApplies = currentMetric === 'uptime' || currentMetric === 'messages' || currentMetric === 'subs';
+      if (!periodApplies) {
+        periodTabsEl.innerHTML = '';
+        return;
+      }
+      periodTabsEl.innerHTML = periodOrder.map((p) =>
+        `<button class="period-btn ${p === currentPeriod ? 'active' : ''}" data-period="${p}">${periodLabels[p]}</button>`
+      ).join('');
+      periodTabsEl.querySelectorAll('.period-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentPeriod = btn.dataset.period;
+          fetchAndRender();
+        });
+      });
+    }
+
+    function render(data) {
+      const cfg = data.settings || {};
+      titleEl.textContent = cfg.title || 'LeaderBoard';
+      const periodApplies = currentMetric === 'uptime' || currentMetric === 'messages' || currentMetric === 'subs';
+      subtitleEl.textContent = `${metricLabels[currentMetric]}${periodApplies ? ` (${periodLabels[currentPeriod]})` : ''}`;
+
+      renderMetricTabs(cfg);
+      renderPeriodTabs();
+
+      const entries = data.leaderboard || [];
+      if (entries.length === 0) {
+        podiumBgEl.style.backgroundImage = 'none';
+        podiumContentEl.innerHTML = '';
+        listEl.innerHTML = '<p class="empty">Aucune donnée pour le moment.</p>';
+        return;
+      }
+
+      const top3 = entries.slice(0, 3);
+      const rest = entries.slice(3);
+      const slots = [top3[1], top3[0], top3[2]]; // 2e | 1er | 3e
+      const slotClasses = ['second', 'first', 'third'];
+      const slotRanks = [2, 1, 3];
+
+      podiumBgEl.style.backgroundImage = top3[0]?.avatarUrl ? `url(${top3[0].avatarUrl})` : 'none';
+
+      podiumContentEl.innerHTML = slots.map((e, i) => {
+        if (!e) return '<div class="podium-slot"></div>';
+        return `
+          <div class="podium-slot ${slotClasses[i]}">
+            ${renderAvatar(e, 'avatar')}
+            <div class="podium-rank">${slotRanks[i]}</div>
+            <div class="podium-name">${e.username}</div>
+            <div class="podium-value">${formatValue(currentMetric, e.value, data.pointsName)}</div>
+          </div>`;
+      }).join('');
+
+      listEl.innerHTML = rest.map((e, i) => `
+        <div class="list-row">
+          <span class="list-rank">${i + 4}</span>
+          ${renderAvatar(e, 'list-avatar')}
+          <span class="list-name">${e.isSubscriber ? '<span class="star">★</span>' : ''}${e.username}</span>
+          <span class="list-value">${formatValue(currentMetric, e.value, data.pointsName)}</span>
+        </div>`).join('');
+    }
+
+    async function fetchAndRender() {
+      try {
+        const res = await fetch(`/public-api/viewerstats?metric=${currentMetric}&period=${currentPeriod}`);
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        // silencieux : on retentera au prochain cycle
+      }
+    }
+
+    fetchAndRender();
+    setInterval(fetchAndRender, 20000); // rafraîchit les données régulièrement (mêmes onglets, valeurs à jour)
+  </script>
+</body>
+</html>
