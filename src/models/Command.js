@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const commandSchema = new mongoose.Schema({
   channel: { type: String, required: true, lowercase: true },
   name: { type: String, required: true, lowercase: true }, // sans le préfixe, ex: "discord"
+  group: { type: String, default: '', trim: true }, // pour ranger les commandes entre elles dans le dashboard (vide = "Sans groupe")
+  description: { type: String, default: '' }, // note interne pour s'y retrouver (jamais affichée en chat)
   response: { type: String, default: '' }, // texte parlé (TTS) ou réponse chat ; inutile pour les commandes de type Son
   cooldown: { type: Number, default: 5 }, // secondes
   userLevel: {

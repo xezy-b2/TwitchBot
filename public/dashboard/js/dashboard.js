@@ -367,55 +367,119 @@ document.getElementById('cmdSoundFile').addEventListener('change', async (e) => 
 });
 
 // ============ COMMANDES ============
+const collapsedGroups = new Set(); // mémorise les groupes repliés pendant la session (purement visuel)
+
 async function loadCommands() {
   const res = await fetch('/api/commands');
   const commands = await res.json();
-  const tbody = document.querySelector('#commandsTable tbody');
-  tbody.innerHTML = '';
+  const container = document.getElementById('commandsGroupedContainer');
+  container.innerHTML = '';
+
+  // Alimente les suggestions de groupe existantes dans le formulaire
+  const distinctGroups = [...new Set(commands.map((c) => c.group).filter(Boolean))].sort();
+  document.getElementById('cmdGroupList').innerHTML = distinctGroups.map((g) => `<option value="${g}">`).join('');
+
+  if (commands.length === 0) {
+    container.innerHTML = '<p class="hint">Aucune commande pour le moment.</p>';
+    return;
+  }
+
+  // Regroupe les commandes par groupe (les sans-groupe atterrissent dans "Sans groupe", affiché en dernier)
+  const byGroup = {};
   commands.forEach((cmd) => {
-    const soundCount = cmd.soundUrls?.length || (cmd.soundUrl ? 1 : 0);
-    const typeIcon = soundCount > 0
-      ? `🎵 Son (${soundCount} son${soundCount > 1 ? 's' : ''}, ${cmd.volume ?? 100}%)`
-      : cmd.isVoice ? '🔊 TTS' : '—';
-    const restrictedLabel = cmd.restrictedToUser ? `@${cmd.restrictedToUser}` : '—';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>!${cmd.name}</td>
-      <td>${cmd.response.slice(0, 50)}${cmd.response.length > 50 ? '…' : ''}</td>
-      <td>${cmd.userLevel}</td>
-      <td>${restrictedLabel}</td>
-      <td>${cmd.cooldown}s</td>
-      <td>${typeIcon}</td>
-      <td>${cmd.enabled ? '✅' : '⛔'}</td>
-      <td>
-        <button data-edit="${cmd._id}">✏️</button>
-        <button data-del="${cmd._id}" class="btn-danger">🗑️</button>
-      </td>`;
-    tbody.appendChild(tr);
+    const key = cmd.group || 'Sans groupe';
+    if (!byGroup[key]) byGroup[key] = [];
+    byGroup[key].push(cmd);
+  });
+  const groupNames = Object.keys(byGroup).sort((a, b) => {
+    if (a === 'Sans groupe') return 1;
+    if (b === 'Sans groupe') return -1;
+    return a.localeCompare(b);
+  });
 
-    tr.querySelector('[data-edit]').addEventListener('click', () => {
-      document.getElementById('commandId').value = cmd._id;
-      document.getElementById('cmdName').value = cmd.name;
-      document.getElementById('cmdResponse').value = cmd.response;
-      document.getElementById('cmdLevel').value = cmd.userLevel;
-      document.getElementById('cmdCooldown').value = cmd.cooldown;
-      document.getElementById('cmdRestrictedUser').value = cmd.restrictedToUser || '';
+  groupNames.forEach((groupName) => {
+    const groupCommands = byGroup[groupName];
+    const groupEl = document.createElement('div');
+    groupEl.className = 'cmd-group' + (collapsedGroups.has(groupName) ? ' collapsed' : '');
+    groupEl.innerHTML = `
+      <div class="cmd-group-header">
+        <h3>📁 ${groupName}</h3>
+        <span class="cmd-group-count">${groupCommands.length} commande${groupCommands.length > 1 ? 's' : ''} <span class="cmd-group-chevron">▼</span></span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Nom</th><th>Réponse / description</th><th>Niveau</th><th>Restreint à</th><th>Cooldown</th><th>Type</th><th>Actif</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>`;
+    container.appendChild(groupEl);
 
-      currentSoundUrls = cmd.soundUrls?.length > 0 ? [...cmd.soundUrls] : (cmd.soundUrl ? [cmd.soundUrl] : []);
-      renderSoundList();
-
-      const type = currentSoundUrls.length > 0 ? 'sound' : cmd.isVoice ? 'voice' : 'text';
-      cmdTypeSelect.value = type;
-      cmdSoundWrapper.classList.toggle('hidden', type !== 'sound');
-      cmdVolumeWrapper.classList.toggle('hidden', type !== 'sound');
-      cmdSoundListWrapper.classList.toggle('hidden', type !== 'sound');
-      cmdResponseWrapper.classList.toggle('hidden', type === 'sound');
-      document.getElementById('cmdVolume').value = cmd.volume ?? 100;
-      document.getElementById('cmdVolumeValue').textContent = cmd.volume ?? 100;
+    groupEl.querySelector('.cmd-group-header').addEventListener('click', () => {
+      groupEl.classList.toggle('collapsed');
+      if (groupEl.classList.contains('collapsed')) collapsedGroups.add(groupName);
+      else collapsedGroups.delete(groupName);
     });
-    tr.querySelector('[data-del]').addEventListener('click', async () => {
-      await fetch(`/api/commands/${cmd._id}`, { method: 'DELETE' });
-      loadCommands();
+
+    const tbody = groupEl.querySelector('tbody');
+
+    groupCommands.forEach((cmd) => {
+      const soundCount = cmd.soundUrls?.length || (cmd.soundUrl ? 1 : 0);
+      const typeIcon = soundCount > 0
+        ? `🎵 Son (${soundCount} son${soundCount > 1 ? 's' : ''}, ${cmd.volume ?? 100}%)`
+        : cmd.isVoice ? '🔊 TTS' : '—';
+      const restrictedLabel = cmd.restrictedToUser ? `@${cmd.restrictedToUser}` : '—';
+      const tr = document.createElement('tr');
+      if (!cmd.enabled) tr.classList.add('cmd-row-disabled');
+      tr.innerHTML = `
+        <td>!${cmd.name}</td>
+        <td>
+          ${cmd.response ? `${cmd.response.slice(0, 50)}${cmd.response.length > 50 ? '…' : ''}` : '<span class="hint">—</span>'}
+          ${cmd.description ? `<br><span class="cmd-description">${cmd.description}</span>` : ''}
+        </td>
+        <td>${cmd.userLevel}</td>
+        <td>${restrictedLabel}</td>
+        <td>${cmd.cooldown}s</td>
+        <td>${typeIcon}</td>
+        <td><button class="cmd-toggle-btn" data-toggle="${cmd._id}" data-enabled="${cmd.enabled}">${cmd.enabled ? '✅ Actif' : '⏸️ En pause'}</button></td>
+        <td>
+          <button data-edit="${cmd._id}">✏️</button>
+          <button data-del="${cmd._id}" class="btn-danger">🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+
+      tr.querySelector('[data-toggle]').addEventListener('click', async () => {
+        await fetch(`/api/commands/${cmd._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: !cmd.enabled })
+        });
+        loadCommands();
+      });
+
+      tr.querySelector('[data-edit]').addEventListener('click', () => {
+        document.getElementById('commandId').value = cmd._id;
+        document.getElementById('cmdName').value = cmd.name;
+        document.getElementById('cmdGroup').value = cmd.group || '';
+        document.getElementById('cmdDescription').value = cmd.description || '';
+        document.getElementById('cmdResponse').value = cmd.response;
+        document.getElementById('cmdLevel').value = cmd.userLevel;
+        document.getElementById('cmdCooldown').value = cmd.cooldown;
+        document.getElementById('cmdRestrictedUser').value = cmd.restrictedToUser || '';
+
+        currentSoundUrls = cmd.soundUrls?.length > 0 ? [...cmd.soundUrls] : (cmd.soundUrl ? [cmd.soundUrl] : []);
+        renderSoundList();
+
+        const type = currentSoundUrls.length > 0 ? 'sound' : cmd.isVoice ? 'voice' : 'text';
+        cmdTypeSelect.value = type;
+        cmdSoundWrapper.classList.toggle('hidden', type !== 'sound');
+        cmdVolumeWrapper.classList.toggle('hidden', type !== 'sound');
+        cmdSoundListWrapper.classList.toggle('hidden', type !== 'sound');
+        cmdResponseWrapper.classList.toggle('hidden', type === 'sound');
+        document.getElementById('cmdVolume').value = cmd.volume ?? 100;
+        document.getElementById('cmdVolumeValue').textContent = cmd.volume ?? 100;
+      });
+      tr.querySelector('[data-del]').addEventListener('click', async () => {
+        await fetch(`/api/commands/${cmd._id}`, { method: 'DELETE' });
+        loadCommands();
+      });
     });
   });
 }
@@ -438,6 +502,8 @@ document.getElementById('commandForm').addEventListener('submit', async (e) => {
 
   const payload = {
     name: document.getElementById('cmdName').value,
+    group: document.getElementById('cmdGroup').value.trim(),
+    description: document.getElementById('cmdDescription').value.trim(),
     response: responseText,
     userLevel: document.getElementById('cmdLevel').value,
     cooldown: parseInt(document.getElementById('cmdCooldown').value, 10),

@@ -107,6 +107,8 @@
         <input type="hidden" id="commandId" />
         <div class="row">
           <input id="cmdName" placeholder="nom (sans !)" required />
+          <input id="cmdGroup" list="cmdGroupList" placeholder="Groupe (ex: Fun, Infos, Réseaux...)" />
+          <datalist id="cmdGroupList"></datalist>
           <select id="cmdLevel">
             <option value="everyone">Tout le monde</option>
             <option value="subscriber">Abonnés</option>
@@ -117,6 +119,10 @@
           <input id="cmdCooldown" type="number" placeholder="Cooldown (s)" value="5" />
           <input id="cmdRestrictedUser" placeholder="Restreindre à un pseudo (optionnel)" />
         </div>
+        <div class="row">
+          <input id="cmdDescription" placeholder="Description interne (optionnelle, pour s'y retrouver — jamais visible en chat)" style="flex:1;" />
+        </div>
+        <p class="hint">Laisse "Groupe" vide pour ranger la commande dans "Sans groupe". La description ne sert qu'au dashboard, elle n'est jamais affichée en chat.</p>
         <div class="row">
           <label>Type de réponse
             <select id="cmdType">
@@ -145,10 +151,7 @@
           <button type="button" id="cmdCancelBtn" class="btn-secondary">Annuler</button>
         </div>
       </form>
-      <table class="data-table" id="commandsTable">
-        <thead><tr><th>Nom</th><th>Réponse</th><th>Niveau</th><th>Restreint à</th><th>Cooldown</th><th>Type</th><th>Actif</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <div id="commandsGroupedContainer"></div>
     </section>
 
     <!-- === Points & Gamble === -->

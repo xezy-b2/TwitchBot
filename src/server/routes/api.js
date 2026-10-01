@@ -27,7 +27,7 @@ router.get('/commands', async (req, res) => {
 });
 
 router.post('/commands', async (req, res) => {
-  const { name, response, cooldown, userLevel, isVoice, soundUrls, volume, restrictedToUser } = req.body;
+  const { name, group, description, response, cooldown, userLevel, isVoice, soundUrls, volume, restrictedToUser } = req.body;
   if (!name) return res.status(400).json({ error: 'name requis' });
 
   const cleanSoundUrls = Array.isArray(soundUrls) ? soundUrls.filter(Boolean) : [];
@@ -35,11 +35,19 @@ router.post('/commands', async (req, res) => {
     return res.status(400).json({ error: 'response requis (sauf pour une commande de type Son)' });
   }
 
+  const cleanName = name.toLowerCase().replace(/^!/, '');
+
+  // On préserve l'état actif/en pause d'une commande existante : la ré-enregistrer
+  // depuis le formulaire ne doit pas la réactiver si elle était volontairement en pause.
+  const existing = await Command.findOne({ channel: CHANNEL, name: cleanName });
+
   const cmd = await Command.findOneAndUpdate(
-    { channel: CHANNEL, name: name.toLowerCase().replace(/^!/, '') },
+    { channel: CHANNEL, name: cleanName },
     {
       channel: CHANNEL,
-      name: name.toLowerCase().replace(/^!/, ''),
+      name: cleanName,
+      group: (group || '').trim(),
+      description: (description || '').trim(),
       response: response || '',
       cooldown: cooldown ?? 5,
       userLevel: userLevel ?? 'everyone',
@@ -48,7 +56,7 @@ router.post('/commands', async (req, res) => {
       soundUrl: null, // on n'utilise plus le champ legacy pour les nouvelles sauvegardes
       volume: volume !== undefined ? Math.max(0, Math.min(100, parseInt(volume, 10))) : 100,
       restrictedToUser: restrictedToUser ? restrictedToUser.trim().toLowerCase().replace(/^@/, '') : null,
-      enabled: true
+      enabled: existing ? existing.enabled : true
     },
     { upsert: true, new: true }
   );
