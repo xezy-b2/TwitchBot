@@ -13,78 +13,93 @@
     --brg-bright: #2E9A5C;
     --mint: #BFE3CE;
     --ink: #08090A;
-    --paper: #F3F5F1;
+    --paper: #F3F1E7;
+    --caption-dark: #1A1A18;
+    --caption-muted: #8A8A82;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: transparent;
     font-family: 'Barlow Condensed', sans-serif;
-    padding: 20px;
+    padding: 30px;
   }
-  .box {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-    background: var(--ink);
-    border: 1px solid rgba(46, 154, 92, 0.35);
-    border-radius: 12px;
-    width: 360px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
-    overflow: hidden;
-  }
-  .box.show { opacity: 1; transform: translateY(0); }
 
-  .art {
-    width: 84px;
-    flex-shrink: 0;
+  .polaroid {
+    position: relative;
+    width: 208px;
+    background: var(--paper);
+    padding: 12px 12px 0 12px;
+    border-radius: 3px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+    transform: rotate(-4deg) translateY(16px);
+    opacity: 0;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .polaroid.show { opacity: 1; transform: rotate(-4deg) translateY(0); }
+
+  /* Petit bout de "scotch" en haut, clin d'œil BRG */
+  .tape {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    width: 64px;
+    height: 22px;
+    transform: translateX(-50%) rotate(2deg);
+    background: linear-gradient(180deg, rgba(191,227,206,0.55), rgba(191,227,206,0.3));
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  .art-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     background-color: var(--brg-deep);
     background-size: cover;
     background-position: center;
+    overflow: hidden;
   }
 
-  .info {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 16px;
+  .eq-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: flex-end;
+    gap: 2px;
+    background: rgba(1, 43, 24, 0.65);
+    padding: 5px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
   }
-
-  .eyebrow {
-    margin: 0 0 4px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--mint);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .eyebrow .dot {
-    width: 6px; height: 6px; border-radius: 50%;
+  .eq-badge span {
+    width: 3px;
     background: var(--brg-bright);
-    box-shadow: 0 0 8px var(--brg-bright);
-    animation: pulse 1.6s ease-in-out infinite;
+    border-radius: 1px;
+    animation: eq 0.9s ease-in-out infinite;
   }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .eq-badge span:nth-child(1) { height: 6px; animation-delay: 0s; }
+  .eq-badge span:nth-child(2) { height: 11px; animation-delay: 0.2s; }
+  .eq-badge span:nth-child(3) { height: 8px; animation-delay: 0.4s; }
+  @keyframes eq { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
+  .caption {
+    padding: 14px 4px 20px;
+  }
   .title {
+    margin: 0;
     font-size: 18px;
     font-weight: 700;
-    color: var(--paper);
+    color: var(--caption-dark);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .artist {
-    font-family: 'Space Mono', monospace;
+    margin: 2px 0 0;
     font-size: 13px;
-    color: var(--mint);
+    color: var(--caption-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -92,32 +107,34 @@
 </style>
 </head>
 <body>
-  <div class="box" id="box">
-    <div class="art" id="art"></div>
-    <div class="info">
-      <p class="eyebrow"><span class="dot"></span> En écoute</p>
-      <div class="title" id="title">—</div>
-      <div class="artist" id="artist">—</div>
+  <div class="polaroid" id="polaroid">
+    <div class="tape"></div>
+    <div class="art-frame" id="art">
+      <div class="eq-badge"><span></span><span></span><span></span></div>
+    </div>
+    <div class="caption">
+      <p class="title" id="title">—</p>
+      <p class="artist" id="artist">—</p>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    const box = document.getElementById('box');
+    const polaroid = document.getElementById('polaroid');
     const art = document.getElementById('art');
     const titleEl = document.getElementById('title');
     const artistEl = document.getElementById('artist');
 
     function render(data) {
       if (!data || !data.isPlaying) {
-        box.classList.remove('show');
+        polaroid.classList.remove('show');
         return;
       }
       titleEl.textContent = data.title || '—';
       artistEl.textContent = data.artist || '—';
-      art.style.backgroundImage = data.albumArt ? `url(${data.albumArt})` : 'none';
-      box.classList.add('show');
+      if (data.albumArt) art.style.backgroundImage = `url(${data.albumArt})`;
+      polaroid.classList.add('show');
     }
 
     fetch('/public-api/nowplaying')
