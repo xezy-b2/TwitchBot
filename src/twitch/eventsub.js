@@ -173,18 +173,22 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
       condition: { to_broadcaster_user_id: broadcasterId }
     },
     {
+      // Twitch a retiré la v1 de ces 3 événements le 15 janvier 2026 (voir
+      // forum développeur Twitch) : la v2 est désormais obligatoire. Le format
+      // des champs qu'on utilise (level, goal, progress, total...) est inchangé,
+      // la v2 ajoute seulement des infos en plus (Golden Kappa Train, etc.).
       type: 'channel.hype_train.begin',
-      version: '1',
+      version: '2',
       condition: { broadcaster_user_id: broadcasterId }
     },
     {
       type: 'channel.hype_train.progress',
-      version: '1',
+      version: '2',
       condition: { broadcaster_user_id: broadcasterId }
     },
     {
       type: 'channel.hype_train.end',
-      version: '1',
+      version: '2',
       condition: { broadcaster_user_id: broadcasterId }
     }
   ];
