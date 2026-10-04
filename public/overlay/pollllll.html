@@ -12,47 +12,30 @@
     --brg: #01532B;
     --brg-bright: #2E9A5C;
     --mint: #BFE3CE;
-    --paper: #F3F1E7;
-    --caption-dark: #1A1A18;
-    --caption-muted: #7E7E76;
-    --track: rgba(0,0,0,0.08);
-    --gold: #E8C45A;
+    --ink: #08090A;
+    --ink2: #101512;
+    --track: #17201B;
+    --paper: #F3F5F1;
+    --muted: #7C948A;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: transparent;
     font-family: 'Barlow Condensed', sans-serif;
-    padding: 30px;
+    padding: 20px;
   }
 
-  /* --- Fiche cartonnée --- */
-  .card {
-    position: relative;
-    width: 300px;
-    background: var(--paper);
-    padding: 22px 20px 16px;
-    border-radius: 3px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
-    transform: rotate(-2deg) translateY(16px);
-    opacity: 0;
-    transition: opacity 0.5s ease, transform 0.5s ease;
+  .panel {
+    background: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.35);
+    border-radius: 14px;
+    width: 360px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    padding: 16px 18px 14px;
     display: none;
   }
-  .card.show { display: block; }
-  .card.visible { opacity: 1; transform: rotate(-2deg) translateY(0); }
-
-  .tape {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    width: 64px;
-    height: 22px;
-    transform: translateX(-50%) rotate(2deg);
-    background: linear-gradient(180deg, rgba(191,227,206,0.55), rgba(191,227,206,0.3));
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  }
+  .panel.show { display: block; }
 
   .eyebrow {
     margin: 0 0 4px;
@@ -61,58 +44,60 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--brg);
+    color: var(--brg-bright);
   }
-  .eyebrow.result { color: #9A7A12; }
+  .eyebrow.result { color: #FFD35C; }
 
   .question {
-    margin: 0 0 4px;
-    font-size: 22px;
+    margin: 0 0 6px;
+    font-size: 19px;
     font-weight: 700;
-    color: var(--caption-dark);
-    line-height: 1.15;
-  }
-  .subtitle {
-    margin: 0 0 14px;
-    font-size: 13px;
-    color: var(--caption-muted);
-    font-weight: 500;
+    color: var(--paper);
+    line-height: 1.2;
   }
 
-  .options { display: flex; flex-direction: column; gap: 7px; }
+  .subtitle {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: var(--brg-bright);
+    font-weight: 600;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
 
   .option-row {
     position: relative;
-    border-radius: 4px;
+    border-radius: 8px;
     overflow: hidden;
     background: var(--track);
-    padding: 7px 10px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
   }
   .option-fill {
     position: absolute;
     inset: 0;
     width: 0%;
-    background: linear-gradient(90deg, #BFE3CE, #8FCFA8);
+    background: linear-gradient(90deg, var(--brg), var(--brg-bright));
     transition: width 0.4s ease;
     z-index: 0;
   }
   .option-row.winner .option-fill {
-    background: linear-gradient(90deg, #F2D675, var(--gold));
+    background: linear-gradient(90deg, #B8860B, #FFD35C);
   }
+
   .option-badge {
     position: relative;
     z-index: 1;
     font-family: 'Space Mono', monospace;
     font-size: 11px;
     font-weight: 700;
-    color: var(--caption-dark);
-    border: 1.5px solid var(--caption-dark);
-    border-radius: 5px;
-    width: 21px;
-    height: 21px;
+    color: var(--paper);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -122,9 +107,9 @@
     position: relative;
     z-index: 1;
     flex: 1;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--caption-dark);
+    color: var(--paper);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -133,39 +118,31 @@
     position: relative;
     z-index: 1;
     font-family: 'Space Mono', monospace;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    color: var(--caption-dark);
+    color: var(--paper);
     flex-shrink: 0;
-  }
-
-  /* Pointillés façon ticket détachable */
-  .perforation {
-    border: none;
-    border-top: 2px dashed rgba(0,0,0,0.2);
-    margin: 14px 0 10px;
   }
 
   .footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 12px;
   }
-  .total-votes { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--caption-muted); }
-  .timer { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--brg); }
+  .total-votes { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .timer { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--brg-bright); }
 
   .progress-track { height: 4px; border-radius: 2px; background: var(--track); margin-top: 8px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--brg); width: 100%; transition: width 1s linear; }
+  .progress-fill { height: 100%; background: var(--brg-bright); width: 100%; transition: width 1s linear; }
 </style>
 </head>
 <body>
-  <div class="card" id="card">
-    <div class="tape"></div>
+  <div class="panel" id="panel">
     <p class="eyebrow" id="eyebrow">Sondage</p>
     <p class="question" id="question">—</p>
     <p class="subtitle" id="subtitle">Tapez le numéro dans le chat pour voter</p>
     <div class="options" id="options"></div>
-    <hr class="perforation" />
     <div class="footer">
       <span class="total-votes" id="totalVotes">0 vote</span>
       <span class="timer" id="timer"></span>
@@ -176,7 +153,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    const card = document.getElementById('card');
+    const panel = document.getElementById('panel');
     const eyebrowEl = document.getElementById('eyebrow');
     const questionEl = document.getElementById('question');
     const subtitleEl = document.getElementById('subtitle');
@@ -188,23 +165,6 @@
 
     let countdownInterval = null;
     let hideTimeout = null;
-    let hideDisplayTimeout = null;
-
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-
-    function revealCard() {
-      clearTimeout(hideDisplayTimeout);
-      card.classList.add('show');
-      // laisse le navigateur appliquer display:block avant de lancer la transition
-      requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('visible')));
-    }
-
-    function hideCard() {
-      card.classList.remove('visible');
-      hideDisplayTimeout = setTimeout(() => card.classList.remove('show'), 500);
-    }
 
     function renderOptions(state, isResult) {
       const maxVotes = Math.max(0, ...state.options.map((o) => o.votes));
@@ -214,7 +174,7 @@
           <div class="option-row ${isWinner ? 'winner' : ''}">
             <div class="option-fill" style="width:${o.percentage}%"></div>
             <span class="option-badge">${i + 1}</span>
-            <span class="option-text">${escapeHtml(o.text)}</span>
+            <span class="option-text">${o.text}</span>
             <span class="option-pct">${o.votes} · ${o.percentage}%</span>
           </div>`;
       }).join('');
@@ -223,6 +183,7 @@
 
     function startCountdown(endsAt) {
       clearInterval(countdownInterval);
+      progressTrack.style.display = 'block';
       const totalDuration = new Date(endsAt).getTime() - Date.now();
 
       function tick() {
@@ -240,18 +201,20 @@
 
     function showActive(state) {
       clearTimeout(hideTimeout);
+      panel.classList.add('show');
       eyebrowEl.textContent = 'Sondage';
       eyebrowEl.classList.remove('result');
       questionEl.textContent = state.question;
+      subtitleEl.textContent = 'Tapez le numéro dans le chat pour voter';
       subtitleEl.style.display = 'block';
       progressTrack.style.display = 'block';
       renderOptions(state, false);
       if (state.endsAt) startCountdown(state.endsAt);
-      revealCard();
     }
 
     function showResult(state) {
       clearInterval(countdownInterval);
+      panel.classList.add('show');
       eyebrowEl.textContent = 'Résultat du sondage';
       eyebrowEl.classList.add('result');
       questionEl.textContent = state.question;
@@ -259,11 +222,10 @@
       timerEl.textContent = '';
       progressTrack.style.display = 'none';
       renderOptions(state, true);
-      revealCard();
 
-      // Laisse le résultat affiché quelques secondes, puis masque la fiche
+      // Laisse le résultat affiché quelques secondes, puis masque l'overlay
       clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(hideCard, 15000);
+      hideTimeout = setTimeout(() => panel.classList.remove('show'), 15000);
     }
 
     fetch('/public-api/poll')
@@ -275,7 +237,7 @@
 
     socket.on('poll:start', showActive);
     socket.on('poll:update', (state) => {
-      if (card.classList.contains('visible')) renderOptions(state, false);
+      if (panel.classList.contains('show')) renderOptions(state, false);
     });
     socket.on('poll:end', showResult);
   </script>
