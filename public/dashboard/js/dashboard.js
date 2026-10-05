@@ -370,23 +370,22 @@ document.getElementById('cmdSoundFile').addEventListener('change', async (e) => 
 const collapsedGroups = new Set(); // mémorise les groupes repliés pendant la session (purement visuel)
 
 async function loadCommands() {
-  const res = await fetch('/api/commands');
+  const [res, builtinRes] = await Promise.all([fetch('/api/commands'), fetch('/api/builtin-commands')]);
   const commands = await res.json();
+  const builtins = (await builtinRes.json()).map((b) => ({ ...b, _builtin: true }));
+  const builtinNames = new Set(builtins.map((b) => b.name));
   const container = document.getElementById('commandsGroupedContainer');
   container.innerHTML = '';
 
-  // Alimente les suggestions de groupe existantes dans le formulaire
-  const distinctGroups = [...new Set(commands.map((c) => c.group).filter(Boolean))].sort();
+  // Alimente les suggestions de groupe dans le formulaire (groupes perso + groupes des commandes natives,
+  // pour pouvoir ranger une commande perso à côté d'une native si on le souhaite)
+  const distinctGroups = [...new Set([...commands, ...builtins].map((c) => c.group).filter(Boolean))].sort();
   document.getElementById('cmdGroupList').innerHTML = distinctGroups.map((g) => `<option value="${g}">`).join('');
 
-  if (commands.length === 0) {
-    container.innerHTML = '<p class="hint">Aucune commande pour le moment.</p>';
-    return;
-  }
-
-  // Regroupe les commandes par groupe (les sans-groupe atterrissent dans "Sans groupe", affiché en dernier)
+  // Regroupe par groupe (les sans-groupe atterrissent dans "Sans groupe", affiché en dernier).
+  // Dans un même groupe, les commandes natives passent en premier.
   const byGroup = {};
-  commands.forEach((cmd) => {
+  [...builtins, ...commands].forEach((cmd) => {
     const key = cmd.group || 'Sans groupe';
     if (!byGroup[key]) byGroup[key] = [];
     byGroup[key].push(cmd);
@@ -421,6 +420,25 @@ async function loadCommands() {
     const tbody = groupEl.querySelector('tbody');
 
     groupCommands.forEach((cmd) => {
+      if (cmd._builtin) {
+        const levelLabels = { everyone: 'everyone', moderator: 'moderator' };
+        const trNative = document.createElement('tr');
+        trNative.innerHTML = `
+          <td>!${cmd.name}<br><span class="cmd-description">${cmd.usage}</span></td>
+          <td>
+            ${cmd.description}
+            <br><span class="cmd-description">Renvoie : ${cmd.output}</span>
+          </td>
+          <td>${levelLabels[cmd.userLevel] || cmd.userLevel}</td>
+          <td>—</td>
+          <td>${cmd.cooldown || '—'}</td>
+          <td><span class="cmd-native-badge">⚙️ Native</span></td>
+          <td><span class="cmd-native-badge">🔒 Toujours active</span></td>
+          <td></td>`;
+        tbody.appendChild(trNative);
+        return;
+      }
+
       const soundCount = cmd.soundUrls?.length || (cmd.soundUrl ? 1 : 0);
       const typeIcon = soundCount > 0
         ? `🎵 Son (${soundCount} son${soundCount > 1 ? 's' : ''}, ${cmd.volume ?? 100}%)`
@@ -433,6 +451,7 @@ async function loadCommands() {
         <td>
           ${cmd.response ? `${cmd.response.slice(0, 50)}${cmd.response.length > 50 ? '…' : ''}` : '<span class="hint">—</span>'}
           ${cmd.description ? `<br><span class="cmd-description">${cmd.description}</span>` : ''}
+          ${builtinNames.has(cmd.name) ? '<br><span class="cmd-description">⚠️ Même nom qu\'une commande native : celle-ci est prioritaire, cette commande ne sera jamais exécutée.</span>' : ''}
         </td>
         <td>${cmd.userLevel}</td>
         <td>${restrictedLabel}</td>

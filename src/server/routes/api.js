@@ -14,6 +14,7 @@ const achievementTracker = require('../../steam/achievementTracker');
 const statsManager = require('../../points/statsManager');
 const pollManager = require('../../points/pollManager');
 const streamSessionManager = require('../../points/streamSessionManager');
+const { listBuiltinCommands } = require('../../bot/builtinCommandsMeta');
 const { getUserByLogin, getChannelFollowers, searchGame } = require('../../twitch/helixClient');
 
 const CHANNEL = process.env.TWITCH_CHANNEL.toLowerCase();
@@ -297,6 +298,11 @@ router.post('/poll/end', async (req, res) => {
     pollManager.announcePollResult(req.app.locals.client, CHANNEL, result);
   }
   res.json({ ok: true });
+});
+
+// --- Commandes natives (lecture seule, pour affichage dans le dashboard) ---
+router.get('/builtin-commands', (req, res) => {
+  res.json(listBuiltinCommands());
 });
 
 // --- Historique de stream ---

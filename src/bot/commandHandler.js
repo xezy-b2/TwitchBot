@@ -1,6 +1,7 @@
 const Settings = require('../models/Settings');
 const Command = require('../models/Command');
 const builtins = require('./builtinCommands');
+require('./builtinCommandsMeta').checkMetaConsistency(builtins);
 const { getUserLevel, hasPermission, trackChatter, markChatActivity } = require('./client');
 const statsManager = require('../points/statsManager');
 const pollManager = require('../points/pollManager');
