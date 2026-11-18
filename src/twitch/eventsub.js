@@ -224,6 +224,11 @@ function handleNotification(payload, onEvent) {
 
   switch (type) {
     case 'channel.subscribe':
+      // Quand quelqu'un offre des subs, Twitch envoie un événement "cadeau" (channel.subscription.gift,
+      // avec le total) ET un événement "sub" par bénéficiaire (is_gift = true). On ignore ces derniers :
+      // le cadeau est déjà compté par son propre événement, sinon le temps du subathon, le compteur
+      // de subs et les alertes seraient comptés deux fois.
+      if (ev.is_gift) break;
       onEvent('sub', { user: ev.user_name, tier: (ev.tier / 1000).toString() });
       break;
     case 'channel.subscription.message':
