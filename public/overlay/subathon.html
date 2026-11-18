@@ -112,6 +112,44 @@
   }
   .timer-status.paused { color: #8a8a8a; }
 
+  /* ============ BLOC COMPTEURS (subs / bits cumulés) ============ */
+  .counters-box {
+    display: none;
+    gap: 12px;
+    background-color: var(--ink);
+    border: 1px solid rgba(46, 154, 92, 0.4);
+    border-radius: 14px;
+    padding: 14px 20px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+  .counters-box.show { display: flex; }
+  .counter-cell { flex: 1; min-width: 0; }
+  .counter-cell + .counter-cell { border-left: 1px solid rgba(46, 154, 92, 0.25); padding-left: 14px; }
+  .counter-label {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mint);
+  }
+  .counter-value {
+    margin: 0;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--paper);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px rgba(46, 154, 92, 0.35);
+  }
+  .counter-sub {
+    margin: 6px 0 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--brg-bright);
+  }
+
   /* ============ BLOC OBJECTIFS ============ */
   .goals-box {
     position: relative;
@@ -222,6 +260,8 @@
       <p class="timer-status" id="timerStatus">En pause</p>
     </div>
 
+    <div class="counters-box" id="countersBox"></div>
+
     <div class="goals-box" id="goalsBox">
       <p class="eyebrow">Objectifs</p>
       <div id="goalsList"><p class="empty-hint">Aucun objectif défini.</p></div>
@@ -239,7 +279,10 @@
     const goalsList = document.getElementById('goalsList');
     const goalsPaginationEl = document.getElementById('goalsPagination');
 
+    const countersBoxEl = document.getElementById('countersBox');
+
     let totals = { subs: 0, bits: 0 };
+    let displayConfig = { showGoalsPanel: true, showCounters: true, countersMode: 'separate', bitsPerSubEquivalent: 500 };
     let goals = [];
     let goalsPerPage = 4;
     let goalsRotateSeconds = 8;
@@ -331,6 +374,47 @@
       }, goalsRotateSeconds * 1000);
     }
 
+    const nf = new Intl.NumberFormat('fr-FR');
+
+    /** Compteurs cumulés depuis le début du subathon (repartent à zéro au reset). */
+    function renderCounters() {
+      countersBoxEl.classList.toggle('show', !!displayConfig.showCounters);
+      if (!displayConfig.showCounters) return;
+
+      if (displayConfig.countersMode === 'combined') {
+        const perSub = Math.max(1, displayConfig.bitsPerSubEquivalent || 500);
+        const equivalent = totals.subs + Math.floor(totals.bits / perSub);
+        countersBoxEl.innerHTML = `
+          <div class="counter-cell">
+            <p class="counter-label">Total subs</p>
+            <p class="counter-value">${nf.format(equivalent)}</p>
+            <p class="counter-sub">${nf.format(totals.subs)} subs + ${nf.format(totals.bits)} bits</p>
+          </div>`;
+      } else {
+        countersBoxEl.innerHTML = `
+          <div class="counter-cell">
+            <p class="counter-label">Subs</p>
+            <p class="counter-value">${nf.format(totals.subs)}</p>
+          </div>
+          <div class="counter-cell">
+            <p class="counter-label">Bits</p>
+            <p class="counter-value">${nf.format(totals.bits)}</p>
+          </div>`;
+      }
+    }
+
+    /** Applique les options d'affichage choisies dans le dashboard. */
+    function applyDisplayConfig(data) {
+      displayConfig = {
+        showGoalsPanel: data.showGoalsPanel !== false,
+        showCounters: data.showCounters !== false,
+        countersMode: data.countersMode === 'combined' ? 'combined' : 'separate',
+        bitsPerSubEquivalent: data.bitsPerSubEquivalent || 500
+      };
+      goalsBoxEl.style.display = displayConfig.showGoalsPanel ? '' : 'none';
+      renderCounters();
+    }
+
     function renderTimer(secondsRemaining, isRunning) {
       timerValueEl.textContent = formatTime(secondsRemaining);
       timerStatusEl.textContent = isRunning ? '● En direct' : 'En pause';
@@ -345,6 +429,7 @@
         goals = data.goals || [];
         goalsPerPage = data.goalsPerPage || 4;
         goalsRotateSeconds = data.goalsRotateSeconds || 8;
+        applyDisplayConfig(data);
         if (data.backgroundUrl) {
           const bg = `url(${data.backgroundUrl})`;
           timerBoxEl.style.backgroundImage = bg;
@@ -360,7 +445,17 @@
       totals = { subs: data.totalSubs || 0, bits: data.totalBits || 0 };
       renderTimer(data.secondsRemaining, data.isRunning);
       renderGoals();
+      renderCounters();
     });
+
+    // Les options d'affichage se règlent dans le dashboard : on les relit régulièrement,
+    // pour qu'elles s'appliquent sans avoir à rafraîchir la source dans OBS.
+    setInterval(() => {
+      fetch('/public-api/subathon')
+        .then((res) => res.json())
+        .then(applyDisplayConfig)
+        .catch(() => {});
+    }, 15000);
 
     // Navigation manuelle déclenchée depuis les flèches du dashboard
     socket.on('subathon:goals:navigate', (data) => {

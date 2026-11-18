@@ -88,7 +88,13 @@ const settingsSchema = new mongoose.Schema({
     maxSeconds: { type: Number, default: 0 }, // 0 = pas de limite
     // Pagination des objectifs sur l'overlay (évite d'en afficher trop d'un coup)
     goalsPerPage: { type: Number, default: 4, min: 3, max: 5 },
-    goalsRotateSeconds: { type: Number, default: 8, min: 3 }
+    goalsRotateSeconds: { type: Number, default: 8, min: 3 },
+    // Affichage de l'overlay
+    showGoalsPanel: { type: Boolean, default: true },   // false = on retire le panneau des objectifs
+    showCounters: { type: Boolean, default: true },     // compteur(s) de subs / bits cumulés
+    // 'separate' = un compteur de subs + un compteur de bits ; 'combined' = un seul total en "équivalent subs"
+    countersMode: { type: String, enum: ['separate', 'combined'], default: 'separate' },
+    bitsPerSubEquivalent: { type: Number, default: 500, min: 1 } // utilisé seulement en mode 'combined'
   }
 }, { timestamps: true });
 

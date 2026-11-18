@@ -649,6 +649,10 @@ async function loadSettings() {
   document.getElementById('maxSeconds').value = s.subathon.maxSeconds;
   document.getElementById('goalsPerPage').value = s.subathon.goalsPerPage ?? 4;
   document.getElementById('goalsRotateSeconds').value = s.subathon.goalsRotateSeconds ?? 8;
+  document.getElementById('showGoalsPanel').checked = s.subathon.showGoalsPanel ?? true;
+  document.getElementById('showCounters').checked = s.subathon.showCounters ?? true;
+  document.getElementById('countersMode').value = s.subathon.countersMode || 'separate';
+  document.getElementById('bitsPerSubEquivalent').value = s.subathon.bitsPerSubEquivalent ?? 500;
 
   document.getElementById('steamId64').value = s.steamId64 || '';
 
@@ -724,7 +728,11 @@ document.getElementById('subathonConfigForm').addEventListener('submit', async (
         secondsPer100Bits: parseInt(document.getElementById('secondsPer100Bits').value, 10),
         maxSeconds: parseInt(document.getElementById('maxSeconds').value, 10),
         goalsPerPage: Math.min(5, Math.max(3, parseInt(document.getElementById('goalsPerPage').value, 10) || 4)),
-        goalsRotateSeconds: parseInt(document.getElementById('goalsRotateSeconds').value, 10) || 8
+        goalsRotateSeconds: parseInt(document.getElementById('goalsRotateSeconds').value, 10) || 8,
+        showGoalsPanel: document.getElementById('showGoalsPanel').checked,
+        showCounters: document.getElementById('showCounters').checked,
+        countersMode: document.getElementById('countersMode').value,
+        bitsPerSubEquivalent: Math.max(1, parseInt(document.getElementById('bitsPerSubEquivalent').value, 10) || 500)
       }
     })
   });

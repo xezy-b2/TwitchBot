@@ -281,6 +281,20 @@
           <label style="flex:1;">Objectifs par page sur l'overlay (3 à 5) <input id="goalsPerPage" type="number" min="3" max="5" /></label>
           <label style="flex:1;">Rotation entre pages (secondes) <input id="goalsRotateSeconds" type="number" min="3" /></label>
         </div>
+
+        <h3 style="margin-top:20px;">Affichage de l'overlay</h3>
+        <label class="checkbox"><input id="showGoalsPanel" type="checkbox" /> Afficher le panneau des objectifs</label>
+        <label class="checkbox"><input id="showCounters" type="checkbox" /> Afficher le compteur de subs / bits (cumulés depuis le début du subathon)</label>
+        <div class="row">
+          <label style="flex:1;">Type de compteur
+            <select id="countersMode">
+              <option value="separate">Deux compteurs : subs et bits</option>
+              <option value="combined">Un seul total (bits convertis en équivalent subs)</option>
+            </select>
+          </label>
+          <label style="flex:1;">Bits pour 1 sub (mode « un seul total ») <input id="bitsPerSubEquivalent" type="number" min="1" /></label>
+        </div>
+        <p class="hint">Les compteurs s'additionnent sur tout le subathon et repartent à zéro avec « Réinitialiser ». Ils ne comptent que lorsque le subathon automatique est activé. L'overlay se met à jour tout seul, sans rafraîchir OBS.</p>
         <button type="submit">💾 Enregistrer</button>
       </form>
 

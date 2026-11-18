@@ -26,6 +26,10 @@ router.get('/subathon', async (req, res) => {
     goals,
     goalsPerPage: settings?.subathon?.goalsPerPage || 4,
     goalsRotateSeconds: settings?.subathon?.goalsRotateSeconds || 8,
+    showGoalsPanel: settings?.subathon?.showGoalsPanel ?? true,
+    showCounters: settings?.subathon?.showCounters ?? true,
+    countersMode: settings?.subathon?.countersMode || 'separate',
+    bitsPerSubEquivalent: settings?.subathon?.bitsPerSubEquivalent || 500,
     backgroundUrl: settings?.overlayBackgrounds?.subathon || null
   });
 });
