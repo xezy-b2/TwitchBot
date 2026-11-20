@@ -43,7 +43,10 @@ async function startEventSub(channel, broadcasterId, onEvent) {
         resetKeepalive();
         try {
           console.log(`[EventSub] Notification reçue : ${msg.payload?.subscription?.type}`);
-          handleNotification(msg.payload, onEvent);
+          const safeOnEvent = (t, d) => Promise.resolve()
+            .then(() => onEvent(t, d))
+            .catch((err) => console.error(`[EventSub] Erreur dans le traitement de l'événement "${t}" :`, err));
+          handleNotification(msg.payload, safeOnEvent);
         } catch (err) {
           console.error('[EventSub] Erreur de traitement de la notification :', err);
         }

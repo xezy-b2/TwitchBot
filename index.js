@@ -80,6 +80,25 @@ async function main() {
   }
 
   // --- EventSub (sub / resub / gift sub / cheer) + polling des follows ---
+  function subSeconds(settings, tier) {
+    const sa = settings.subathon;
+    return (tier === '3' ? sa.secondsPerSubT3 : tier === '2' ? sa.secondsPerSubT2 : sa.secondsPerSub) || 0;
+  }
+
+  /** Compte un event dans le subathon EN PREMIER (avant le reste) et log le résultat. */
+  async function countSubathon(settings, progress, type) {
+    if (!settings.subathon?.enabled) {
+      console.log(`[Subathon] "${type}" ignoré : subathon désactivé dans les réglages`);
+      return;
+    }
+    try {
+      const st = await subathonManager.addProgress(CHANNEL, progress, settings);
+      console.log(`[Subathon] "${type}" compté : +${progress.seconds}s, +${progress.subs} sub(s) → total ${st.totalSubs} subs, reste ${st.secondsRemaining}s`);
+    } catch (err) {
+      console.error(`[Subathon] Échec du comptage de "${type}" :`, err);
+    }
+  }
+
   async function handleTwitchEvent(type, data) {
     const settings = await Settings.findOne({ channel: CHANNEL });
     let chatMessage = null;
@@ -151,17 +170,13 @@ async function main() {
       client.say(`#${CHANNEL}`, message);
       return;
     } else if (type === 'sub') {
+      await countSubathon(settings, { seconds: subSeconds(settings, data.tier), subs: 1 }, type);
       chatMessage = settings.alerts.subMessage.replace('{user}', data.user).replace('{tier}', data.tier);
       await updateLastEventState({ lastSubName: data.user, lastSubAt: new Date() });
       await longTermGoalManager.recordEvent(CHANNEL, 'subs', 1);
       await streamSessionManager.recordEngagement(CHANNEL, { newSubs: 1 });
-      if (settings.subathon.enabled) {
-        const seconds = data.tier === '3' ? settings.subathon.secondsPerSubT3
-          : data.tier === '2' ? settings.subathon.secondsPerSubT2
-          : settings.subathon.secondsPerSub;
-        await subathonManager.addProgress(CHANNEL, { seconds, subs: 1 }, settings);
-      }
     } else if (type === 'resub') {
+      await countSubathon(settings, { seconds: subSeconds(settings, data.tier), subs: 1 }, type);
       chatMessage = settings.alerts.resubMessage
         .replace('{user}', data.user)
         .replace('{tier}', data.tier)
@@ -169,26 +184,18 @@ async function main() {
       await updateLastEventState({ lastSubName: data.user, lastSubAt: new Date() });
       await longTermGoalManager.recordEvent(CHANNEL, 'subs', 1);
       await streamSessionManager.recordEngagement(CHANNEL, { newSubs: 1 });
-      if (settings.subathon.enabled) {
-        const seconds = data.tier === '3' ? settings.subathon.secondsPerSubT3
-          : data.tier === '2' ? settings.subathon.secondsPerSubT2
-          : settings.subathon.secondsPerSub;
-        await subathonManager.addProgress(CHANNEL, { seconds, subs: 1 }, settings);
-      }
     } else if (type === 'giftsub') {
+      await countSubathon(
+        settings,
+        { seconds: (settings.subathon.secondsPerGiftSub || 0) * data.total, subs: data.total },
+        type
+      );
       chatMessage = settings.alerts.giftSubMessage
         .replace('{user}', data.user)
         .replace('{recipient}', `${data.total} viewer(s)`);
       await updateLastEventState({ lastSubName: `${data.user} (cadeau x${data.total})`, lastSubAt: new Date() });
       await longTermGoalManager.recordEvent(CHANNEL, 'subs', data.total);
       await streamSessionManager.recordEngagement(CHANNEL, { newSubs: data.total });
-      if (settings.subathon.enabled) {
-        await subathonManager.addProgress(
-          CHANNEL,
-          { seconds: settings.subathon.secondsPerGiftSub * data.total, subs: data.total },
-          settings
-        );
-      }
     } else if (type === 'cheer') {
       chatMessage = settings.alerts.cheerMessage.replace('{user}', data.user).replace('{bits}', data.bits);
       await longTermGoalManager.recordEvent(CHANNEL, 'bits', data.bits);
