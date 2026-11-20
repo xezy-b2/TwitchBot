@@ -114,6 +114,21 @@ router.post('/subathon/addtime', async (req, res) => {
   res.json(state);
 });
 
+// Ajout manuel de subs (ex. des subs qui n'ont pas été reçus) : compteur + temps selon les réglages.
+router.post('/subathon/addsubs', async (req, res) => {
+  const subs = Math.max(0, parseInt(req.body.subs, 10) || 0);
+  if (!subs) return res.status(400).json({ error: 'Nombre de subs invalide' });
+  const addTime = req.body.addTime !== false;
+  const settings = await Settings.findOne({ channel: CHANNEL });
+  const perSub = settings?.subathon?.secondsPerSub ?? 300;
+  const state = await subathonManager.addProgress(
+    CHANNEL,
+    { seconds: addTime ? perSub * subs : 0, subs },
+    settings
+  );
+  res.json(state);
+});
+
 router.post('/subathon/reset', async (req, res) => {
   const state = await subathonManager.reset(CHANNEL);
   res.json(state);

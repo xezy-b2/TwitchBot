@@ -772,6 +772,18 @@ document.getElementById('addMinutesBtn').addEventListener('click', async () => {
   document.getElementById('addMinutesInput').value = '';
 });
 
+document.getElementById('addSubsBtn').addEventListener('click', async () => {
+  const subs = parseInt(document.getElementById('addSubsInput').value, 10) || 0;
+  if (subs < 1) return alert('Indique un nombre de subs.');
+  const res = await fetch('/api/subathon/addsubs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subs, addTime: document.getElementById('addSubsTime').checked })
+  });
+  if (!res.ok) return alert("Erreur lors de l'ajout des subs.");
+  document.getElementById('addSubsInput').value = '';
+});
+
 function navigateGoalsPage(direction) {
   fetch('/api/subathon/goals/navigate', {
     method: 'POST',
