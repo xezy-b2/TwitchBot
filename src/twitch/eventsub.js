@@ -41,7 +41,12 @@ async function startEventSub(channel, broadcasterId, onEvent) {
         connect(newUrl);
       } else if (type === 'notification') {
         resetKeepalive();
-        handleNotification(msg.payload, onEvent);
+        try {
+          console.log(`[EventSub] Notification reçue : ${msg.payload?.subscription?.type}`);
+          handleNotification(msg.payload, onEvent);
+        } catch (err) {
+          console.error('[EventSub] Erreur de traitement de la notification :', err);
+        }
       }
     });
 
@@ -218,17 +223,32 @@ async function subscribeAll(channel, broadcasterId, sessionId) {
   }
 }
 
+// Dernier événement "cadeau" reçu (channel.subscription.gift), pour éviter le double comptage.
+let lastGiftAt = 0;
+
 function handleNotification(payload, onEvent) {
   const type = payload.subscription.type;
   const ev = payload.event;
 
   switch (type) {
     case 'channel.subscribe':
-      // Quand quelqu'un offre des subs, Twitch envoie un événement "cadeau" (channel.subscription.gift,
-      // avec le total) ET un événement "sub" par bénéficiaire (is_gift = true). On ignore ces derniers :
-      // le cadeau est déjà compté par son propre événement, sinon le temps du subathon, le compteur
-      // de subs et les alertes seraient comptés deux fois.
-      if (ev.is_gift) break;
+      // Un cadeau génère un événement "cadeau" (avec le total) ET un "sub" par bénéficiaire (is_gift).
+      // Si l'événement cadeau existe (reçu avant ou juste après), on ignore le sub individuel pour ne
+      // pas compter deux fois. S'il n'arrive pas dans les 5 s, on compte le sub normalement.
+      if (ev.is_gift) {
+        const t0 = Date.now();
+        const subData = { user: ev.user_name, tier: (ev.tier / 1000).toString() };
+        setTimeout(() => {
+          try {
+            if (lastGiftAt >= t0 - 5000) return;
+            console.log(`[EventSub] Sub offert sans événement cadeau, comptage individuel : ${subData.user}`);
+            onEvent('sub', subData);
+          } catch (err) {
+            console.error('[EventSub] Erreur sub offert :', err);
+          }
+        }, 5000);
+        break;
+      }
       onEvent('sub', { user: ev.user_name, tier: (ev.tier / 1000).toString() });
       break;
     case 'channel.subscription.message':
@@ -239,6 +259,7 @@ function handleNotification(payload, onEvent) {
       });
       break;
     case 'channel.subscription.gift':
+      lastGiftAt = Date.now();
       onEvent('giftsub', {
         user: ev.is_anonymous ? 'Anonyme' : ev.user_name,
         total: ev.total,
