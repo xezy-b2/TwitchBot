@@ -617,6 +617,9 @@ async function loadSettings() {
   document.getElementById('gambleCooldown').value = s.gamble.cooldownSeconds;
 
   document.getElementById('followMessage').value = s.alerts.followMessage;
+  document.getElementById('liveOnlineMessage').value = s.alerts.liveOnlineMessage ?? '';
+  document.getElementById('liveFollowersMessage').value = s.alerts.liveFollowersMessage ?? '';
+  document.getElementById('liveNewFollowersMessage').value = s.alerts.liveNewFollowersMessage ?? '';
   document.getElementById('subMessage').value = s.alerts.subMessage;
   document.getElementById('resubMessage').value = s.alerts.resubMessage;
   document.getElementById('giftSubMessage').value = s.alerts.giftSubMessage;
@@ -690,6 +693,9 @@ document.getElementById('alertsForm').addEventListener('submit', async (e) => {
     body: JSON.stringify({
       alerts: {
         followMessage: document.getElementById('followMessage').value,
+        liveOnlineMessage: document.getElementById('liveOnlineMessage').value,
+        liveFollowersMessage: document.getElementById('liveFollowersMessage').value,
+        liveNewFollowersMessage: document.getElementById('liveNewFollowersMessage').value,
         subMessage: document.getElementById('subMessage').value,
         resubMessage: document.getElementById('resubMessage').value,
         giftSubMessage: document.getElementById('giftSubMessage').value,

@@ -31,6 +31,11 @@ const settingsSchema = new mongoose.Schema({
     hypeTrainLevelUpMessage: { type: String, default: '🎉 Niveau {level} atteint sur le train de la hype !' },
     hypeTrainEndingSoonMessage: { type: String, default: '⏰ Plus que 15 secondes pour maintenir le train de la hype en vie !' },
     hypeTrainEndMessage: { type: String, default: '🏁 Train de la hype terminé au niveau {level} avec {total} points au total ! Merci à {topContributor} pour sa contribution !' },
+    // Messages envoyés dans le chat au lancement du live (vide = message désactivé)
+    // Variables : {category} {followers} {diff} {names}
+    liveOnlineMessage: { type: String, default: '✅ Le LIVE est ONLINE sous la catégorie {category}, l\'uptime commence.' },
+    liveFollowersMessage: { type: String, default: 'La chaîne compte {followers} followers ! ({diff} followers depuis le dernier live)' },
+    liveNewFollowersMessage: { type: String, default: 'Nouveaux followers : {names}' },
     soundEnabled: { type: Boolean, default: true },
     soundVolume: { type: Number, default: 100, min: 0, max: 100 },
     // Son personnalisé (MP3) joué sur l'overlay pour chaque type d'alerte, en plus du texte

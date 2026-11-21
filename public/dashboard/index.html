@@ -190,6 +190,10 @@
       </div>
       <form id="alertsForm" class="card">
         <label>Message follow <input id="followMessage" /></label>
+        <label>Message lancement du live (1/3) <input id="liveOnlineMessage" /></label>
+        <label>Message followers au lancement (2/3) <input id="liveFollowersMessage" /></label>
+        <label>Message nouveaux followers (3/3) <input id="liveNewFollowersMessage" /></label>
+        <p class="hint">Envoyés dans le chat quand le live démarre. Variables : <code>{category}</code> <code>{followers}</code> <code>{diff}</code> <code>{names}</code>. Laisse vide pour désactiver un message.</p>
         <div class="sound-row" data-alert-type="follow">
           <input type="file" accept="audio/*" class="alert-sound-file" />
           <span class="alert-sound-current hint"></span>

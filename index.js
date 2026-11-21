@@ -15,6 +15,7 @@ const subathonManager = require('./src/subathon/subathonManager');
 const longTermGoalManager = require('./src/points/longTermGoalManager');
 const statsManager = require('./src/points/statsManager');
 const streamSessionManager = require('./src/points/streamSessionManager');
+const StreamSession = require('./src/models/StreamSession');
 const { connectStreamlabs, disconnectStreamlabs } = require('./src/streamlabs/streamlabsClient');
 const Settings = require('./src/models/Settings');
 const LastEventState = require('./src/models/LastEventState');
@@ -117,10 +118,44 @@ async function main() {
 
       const followersResult = await getChannelFollowers(CHANNEL, broadcasterId, 1);
       const streamInfo = await getStreamByLogin(CHANNEL);
+      // Dernier live terminé (avant d'ouvrir la nouvelle session) : sert de référence pour "depuis le dernier live"
+      const previousSession = await StreamSession.findOne({ channel: CHANNEL, isLive: false }).sort({ startedAt: -1 });
       await streamSessionManager.startSession(CHANNEL, {
         followersAtStart: followersResult?.total ?? 0,
         initialCategory: streamInfo?.game_name || null
       });
+
+      // Messages de lancement du live
+      try {
+        const total = followersResult?.total ?? 0;
+        const hasPrev = !!previousSession;
+        const diffNum = hasPrev ? total - (previousSession.followersAtEnd || previousSession.followersAtStart || 0) : null;
+        const diff = diffNum === null ? '?' : `${diffNum >= 0 ? '+' : ''}${diffNum}`;
+        const category = streamInfo?.game_name || 'Just Chatting';
+        const fill = (tpl, extra = {}) => tpl
+          .replace(/{category}/g, category)
+          .replace(/{followers}/g, total)
+          .replace(/{diff}/g, diff)
+          .replace(/{names}/g, extra.names || '');
+
+        const a = settings.alerts;
+        if (a.liveOnlineMessage) client.say(`#${CHANNEL}`, fill(a.liveOnlineMessage));
+        if (a.liveFollowersMessage) client.say(`#${CHANNEL}`, fill(a.liveFollowersMessage));
+
+        if (a.liveNewFollowersMessage && hasPrev) {
+          const since = new Date(previousSession.endedAt || previousSession.startedAt).getTime();
+          const recent = await getChannelFollowers(CHANNEL, broadcasterId, 100);
+          const names = (recent?.followers || [])
+            .filter((f) => new Date(f.followed_at).getTime() > since)
+            .map((f) => f.user_name);
+          if (names.length) {
+            const shown = names.slice(0, 15).join(', ') + (names.length > 15 ? ` et ${names.length - 15} autres` : '');
+            client.say(`#${CHANNEL}`, fill(a.liveNewFollowersMessage, { names: shown }));
+          }
+        }
+      } catch (err) {
+        console.error('[Live] Erreur lors de l\'envoi des messages de lancement :', err);
+      }
 
       return; // pas d'alerte visuelle ni de message de chat pour cet événement technique
     } else if (type === 'streamoffline') {
