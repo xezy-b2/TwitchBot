@@ -273,8 +273,18 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
     document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    const crumb = document.getElementById('crumbCurrent');
+    if (crumb) crumb.textContent = btn.querySelector('.tab-label')?.textContent || btn.textContent.trim();
+    try { localStorage.setItem('ambri_last_tab', btn.dataset.tab); } catch (e) {}
+    window.scrollTo({ top: 0 });
   });
 });
+// Retour sur le dernier onglet consulté
+try {
+  const last = localStorage.getItem('ambri_last_tab');
+  const target = last && document.querySelector(`.tab-btn[data-tab="${last}"]`);
+  if (target && document.getElementById(`tab-${last}`)) target.click();
+} catch (e) {}
 
 async function loadTwitchAccountStatus() {
   const res = await fetch('/api/twitch/status');

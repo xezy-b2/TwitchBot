@@ -1,0 +1,108 @@
+/* ===== AMBRI.BOT — couche "pro" : s'applique par-dessus style.css (même identité verte) ===== */
+:root {
+  --line: rgba(191, 227, 206, 0.09);
+  --line-strong: rgba(46, 154, 92, 0.38);
+  --radius: 10px;
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 10px 30px rgba(0,0,0,0.28);
+}
+body.light-theme { --line: rgba(11, 15, 12, 0.1); --shadow-card: 0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06); }
+
+html { scroll-behavior: smooth; }
+body { font-size: 16px; -webkit-font-smoothing: antialiased; }
+::selection { background: rgba(46,154,92,0.45); }
+* { scrollbar-width: thin; scrollbar-color: rgba(46,154,92,0.4) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(46,154,92,0.35); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+
+/* --- Barre du haut --- */
+.topbar-v2 {
+  position: sticky; top: 0; z-index: 50;
+  padding: 8px 20px; gap: 16px;
+  background: color-mix(in srgb, var(--ink2) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-brand-btn .brand-logo { width: 52px; }
+.topbar-brand-btn .brand-name { font-size: 23px; }
+.topbar-crumb { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); letter-spacing: 0.04em; padding-left: 8px; }
+.crumb-sep { opacity: 0.4; }
+.crumb-current { color: var(--paper); font-weight: 600; }
+.icon-btn { border-radius: 8px; }
+
+/* --- Sidebar --- */
+.sidebar { width: 252px; padding: 18px 14px; gap: 18px; border-right: 1px solid var(--line); position: sticky; top: 53px; height: calc(100vh - 53px); overflow-y: auto; align-self: flex-start; }
+.sidebar-card { background: transparent; border: none; padding: 0; border-radius: 0; }
+.sidebar-actions.sidebar-card {
+  display: flex; align-items: center; gap: 8px; padding: 10px;
+  background: rgba(46,154,92,0.06); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.sidebar-actions #twitchAccountCard { flex: 1; min-width: 0; }
+.sidebar nav.tabs { gap: 2px; }
+.nav-group-label {
+  margin: 14px 10px 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); opacity: 0.8;
+}
+.nav-group-label:first-child { margin-top: 0; }
+.sidebar .tab-btn { position: relative; padding: 9px 12px; border-radius: 8px; font-size: 15.5px; gap: 12px; border: none; transition: background .15s, color .15s; }
+.tab-svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.85; }
+.sidebar .tab-btn:not(.active):hover { background: rgba(46,154,92,0.09); color: var(--paper); }
+.sidebar .tab-btn.active { background: rgba(46,154,92,0.16); color: var(--paper); border: none; }
+.sidebar .tab-btn.active .tab-svg { color: var(--brg-bright); opacity: 1; }
+.sidebar .tab-btn.active::before { content: ''; position: absolute; left: -14px; top: 7px; bottom: 7px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brg-bright); }
+
+/* --- Contenu --- */
+main { max-width: 1080px; width: 100%; padding: 28px 36px 60px; margin: 0 auto; }
+.tab-content.active { animation: tabIn .22s ease both; }
+@keyframes tabIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.section-header { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 24px; align-items: center; }
+.section-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(46,154,92,0.14); border: 1px solid var(--line-strong); box-shadow: none; font-size: 19px; }
+.section-header h2 { font-size: 24px; letter-spacing: 0.02em; }
+.section-desc { font-size: 15px; }
+.subsection-header { margin: 38px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+
+/* --- Cartes & formulaires --- */
+.card { border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 22px; gap: 14px; transition: border-color .2s; }
+.card:hover { border-color: rgba(46,154,92,0.22); }
+.card label { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; gap: 6px; }
+.card label.checkbox { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--paper); }
+.card input, .card select, .card textarea { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--track); transition: border-color .15s, box-shadow .15s; text-transform: none; letter-spacing: 0; }
+.card input:hover, .card select:hover, .card textarea:hover { border-color: rgba(46,154,92,0.35); }
+.card input:focus, .card select:focus, .card textarea:focus { border-color: var(--brg-bright); box-shadow: 0 0 0 3px rgba(46,154,92,0.2); }
+.card input[type="checkbox"] { accent-color: var(--brg-bright); width: 16px; height: 16px; padding: 0; }
+.card input[type="range"] { accent-color: var(--brg-bright); padding: 0; }
+.hint { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+
+/* --- Boutons --- */
+button { border-radius: 8px; padding: 9px 16px; letter-spacing: 0.02em; transition: background .15s, transform .08s, box-shadow .15s, border-color .15s; }
+button:active { transform: translateY(1px); }
+button:focus-visible, .tab-btn:focus-visible { outline: 2px solid var(--brg-bright); outline-offset: 2px; }
+.card button:not(.btn-secondary):not(.btn-danger):not(.tab-btn) { background: var(--brg); box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset; }
+.btn-secondary { background: var(--track); border: 1px solid var(--line); color: var(--paper); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--track) 70%, var(--brg-bright)); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(224,90,78,0.45); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* --- Tableaux --- */
+.data-table { border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow-card); }
+.data-table th { padding: 11px 14px; font-size: 11.5px; letter-spacing: 0.12em; }
+.data-table td { padding: 11px 14px; border-bottom: 1px solid var(--line); }
+.data-table tbody tr { transition: background .12s; }
+.data-table tbody tr:hover { background: rgba(46,154,92,0.06); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* --- Responsive --- */
+@media (max-width: 1000px) { main { padding: 22px 20px 50px; } }
+@media (max-width: 760px) {
+  .topbar-crumb { display: none; }
+  .sidebar { position: static; height: auto; width: 100%; flex-direction: column; border-bottom: 1px solid var(--line); }
+  .sidebar nav.tabs { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .nav-group-label { display: none; }
+  .sidebar .tab-btn.active::before { display: none; }
+  .sidebar .tab-btn .tab-label { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .tab-content.active { animation: none; } html { scroll-behavior: auto; } }
+
+/* Déconnexion : bouton d'icône à côté du compte Twitch (plus de superposition) */
+.sidebar-actions .icon-logout-btn { position: static; transform: none; order: 2; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); flex-shrink: 0; }
+.sidebar-actions .icon-logout-btn:hover { background: rgba(224,90,78,0.12); color: var(--danger); border-color: rgba(224,90,78,0.4); }
+.sidebar-actions .btn-twitch { padding: 9px 12px; }

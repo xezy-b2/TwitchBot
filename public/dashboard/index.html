@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard Bot Twitch</title>
+<title>AMBRI.BOT — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/dashboard/css/style.css" />
+<link rel="stylesheet" href="/dashboard/css/pro.css" />
 </head>
 <body>
   <header class="topbar-v2">
@@ -20,6 +21,7 @@
       <span class="collapse-arrow" id="collapseArrow">◀</span>
     </button>
 
+    <div class="topbar-crumb" id="topbarCrumb"><span class="crumb-root">Dashboard</span><span class="crumb-sep">/</span><span class="crumb-current" id="crumbCurrent">Commandes</span></div>
     <div class="topbar-right">
       <div class="theme-switcher" id="themeSwitcher">
         <button id="themeToggleBtn" class="icon-btn" title="Mode sombre/clair"><span id="themeToggleIcon">🌙</span></button>
@@ -79,17 +81,21 @@
         </div>
       </div>
 
-      <nav class="tabs sidebar-card">
-        <button class="tab-btn active" data-tab="commands"><span class="tab-icon">💬</span> Commandes</button>
-        <button class="tab-btn" data-tab="points"><span class="tab-icon">🎲</span> Points & Gamble</button>
-        <button class="tab-btn" data-tab="alerts"><span class="tab-icon">🔔</span> Alertes</button>
-        <button class="tab-btn" data-tab="subathon"><span class="tab-icon">⏱️</span> Subathon</button>
-        <button class="tab-btn" data-tab="leaderboard"><span class="tab-icon">🏆</span> Classement</button>
-        <button class="tab-btn" data-tab="extras"><span class="tab-icon">🧩</span> Extras</button>
-        <button class="tab-btn" data-tab="viewerstats"><span class="tab-icon">📊</span> Stats Viewers</button>
-        <button class="tab-btn" data-tab="poll"><span class="tab-icon">🗳️</span> Sondage</button>
-        <button class="tab-btn" data-tab="history"><span class="tab-icon">📈</span> Historique</button>
-        <button class="tab-btn" data-tab="overlays"><span class="tab-icon">🖥️</span> Overlays (OBS)</button>
+      <nav class="tabs">
+        <p class="nav-group-label">Général</p>
+        <button class="tab-btn active" data-tab="commands"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="tab-label">Commandes</span></button>
+        <button class="tab-btn" data-tab="points"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/></svg><span class="tab-label">Points &amp; Gamble</span></button>
+        <button class="tab-btn" data-tab="extras"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4L4.2 8.7l5.4-.8z"/></svg><span class="tab-label">Extras</span></button>
+        <p class="nav-group-label">Live &amp; Stream</p>
+        <button class="tab-btn" data-tab="alerts"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="tab-label">Alertes</span></button>
+        <button class="tab-btn" data-tab="subathon"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span class="tab-label">Subathon</span></button>
+        <button class="tab-btn" data-tab="poll"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="tab-label">Sondage</span></button>
+        <button class="tab-btn" data-tab="history"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg><span class="tab-label">Historique</span></button>
+        <p class="nav-group-label">Communauté</p>
+        <button class="tab-btn" data-tab="leaderboard"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="tab-label">Classement</span></button>
+        <button class="tab-btn" data-tab="viewerstats"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="tab-label">Stats Viewers</span></button>
+        <p class="nav-group-label">Intégrations</p>
+        <button class="tab-btn" data-tab="overlays"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tab-label">Overlays (OBS)</span></button>
       </nav>
     </aside>
 
@@ -273,7 +279,7 @@
         </div>
         <div class="row">
           <input id="addSubsInput" type="number" min="1" placeholder="Nombre de subs à ajouter" />
-          <label style="display:flex;align-items:center;gap:6px;"><input id="addSubsTime" type="checkbox" checked /> + temps</label>
+          <label class="checkbox"><input id="addSubsTime" type="checkbox" checked /> + temps</label>
           <button id="addSubsBtn">➕ Ajouter des subs</button>
         </div>
       </div>
