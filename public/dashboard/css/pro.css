@@ -106,3 +106,82 @@ button:focus-visible, .tab-btn:focus-visible { outline: 2px solid var(--brg-brig
 .sidebar-actions .icon-logout-btn { position: static; transform: none; order: 2; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); flex-shrink: 0; }
 .sidebar-actions .icon-logout-btn:hover { background: rgba(224,90,78,0.12); color: var(--danger); border-color: rgba(224,90,78,0.4); }
 .sidebar-actions .btn-twitch { padding: 9px 12px; }
+
+/* =====================================================================
+   Passe « finitions » : lisibilité des formulaires, panneaux, fichiers
+   ===================================================================== */
+
+/* Icônes SVG des en-têtes (remplacent les emojis) */
+.section-icon svg { width: 21px; height: 21px; color: var(--brg-bright); }
+.subsection-header .section-icon svg { width: 16px; height: 16px; }
+
+/* Libellés lisibles : plus de majuscules espacées */
+.card label { text-transform: none; letter-spacing: 0.01em; font-size: 14px; font-weight: 600; color: color-mix(in srgb, var(--paper) 78%, var(--muted)); gap: 6px; }
+.card label strong { color: var(--paper); }
+.card label.checkbox { font-weight: 500; }
+
+/* Espacements : on arrête les gros vides autour des textes d'aide */
+.card { gap: 12px; }
+.card > .hint, .stack .hint { margin: 0; }
+.hint code, .section-desc code { background: var(--track); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+.card > h3 { margin-bottom: 0; font-size: 13px; letter-spacing: 0.14em; }
+
+/* Boutons de validation : largeur naturelle, alignés à gauche (plus de barres pleine largeur) */
+.card > button[type="submit"], form.card > button, .card > button:not(.btn-twitch) { align-self: flex-start; }
+.card .row > button { align-self: flex-end; }
+.btn-twitch { align-self: flex-start; width: auto; }
+
+/* Champs : numériques et courts restent compacts */
+.card input[type="number"] { max-width: 240px; }
+.card .row input[type="number"] { max-width: 200px; }
+.card input::placeholder { color: color-mix(in srgb, var(--muted) 75%, transparent); }
+
+/* Sélecteur de fichier cohérent avec le thème */
+input[type="file"] { color: var(--muted); font-size: 14px; padding: 6px !important; cursor: pointer; }
+input[type="file"]::file-selector-button {
+  background: var(--brg); color: var(--paper); border: none; border-radius: 6px; padding: 7px 13px; margin-right: 12px;
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s;
+}
+input[type="file"]::file-selector-button:hover { background: var(--brg-bright); }
+
+/* --- Mise en page par panneaux (Alertes) --- */
+.stack { display: flex; flex-direction: column; gap: 18px; margin-bottom: 18px; }
+.stack > .card { margin-bottom: 0; }
+.panel-head { display: flex; flex-direction: column; gap: 4px; padding-bottom: 12px; margin-bottom: 2px; border-bottom: 1px solid var(--line); }
+.panel-head h3 { margin: 0; font-size: 15px; letter-spacing: 0.06em; text-transform: none; color: var(--paper); font-weight: 600; }
+.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.field-hint { margin-top: -6px !important; }
+
+.alert-item { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.alert-item:last-child { border-bottom: none; padding-bottom: 2px; }
+.alert-item-head { grid-column: 1 / -1; }
+.alert-item-title { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brg-bright); }
+.alert-item .hint { grid-column: 1 / -1; }
+.sound-field { display: flex; flex-direction: column; gap: 6px; }
+.field-caption { font-size: 14px; font-weight: 600; color: color-mix(in srgb, var(--paper) 78%, var(--muted)); }
+.sound-field .sound-row { margin: 0; }
+
+/* Barre d'enregistrement collée en bas de l'écran pendant le défilement */
+.form-actions {
+  position: sticky; bottom: 0; z-index: 20; display: flex; justify-content: flex-end; padding: 14px 0;
+  background: linear-gradient(to top, var(--ink) 55%, transparent);
+}
+
+/* --- Liste des overlays --- */
+.overlay-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--ink2); }
+.overlay-row { display: grid; grid-template-columns: 220px 1fr auto; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.overlay-row:last-child { border-bottom: none; }
+.overlay-row:hover { background: rgba(46,154,92,0.05); }
+.overlay-name { font-weight: 600; font-size: 15px; }
+.overlay-row code { font-size: 13px; color: var(--mint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: transparent; padding: 0; }
+.copy-btn { padding: 6px 14px; font-size: 13px; }
+.copy-btn.copied { background: var(--brg); border-color: var(--brg-bright); }
+
+/* Tables : états vides discrets */
+.data-table tbody:empty::after { content: 'Rien à afficher pour le moment.'; display: block; padding: 18px 14px; color: var(--muted); font-size: 14px; }
+
+@media (max-width: 900px) {
+  .alert-item, .field-grid { grid-template-columns: 1fr; }
+  .overlay-row { grid-template-columns: 1fr auto; }
+  .overlay-name { grid-column: 1 / -1; }
+}

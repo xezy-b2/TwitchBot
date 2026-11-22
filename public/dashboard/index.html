@@ -25,7 +25,7 @@
     <div class="topbar-right">
       <div class="theme-switcher" id="themeSwitcher">
         <button id="themeToggleBtn" class="icon-btn" title="Mode sombre/clair"><span id="themeToggleIcon">🌙</span></button>
-        <button id="paletteBtn" class="icon-btn palette-btn" title="Personnaliser les couleurs">🎨</button>
+        <button id="paletteBtn" class="icon-btn palette-btn" title="Personnaliser les couleurs"></button>
 
         <div id="colorPickerPanel" class="color-picker-panel">
           <p class="color-panel-title">Couleur du thème</p>
@@ -62,9 +62,9 @@
               <div class="field"><input type="number" id="fieldB" min="0" max="255" /><label>B</label></div>
             </div>
             <div class="picker-actions">
-              <button type="button" id="eyedropperBtn" class="picker-icon-btn" title="Pipette">💧</button>
+              <button type="button" id="eyedropperBtn" class="picker-icon-btn" title="Pipette"></button>
               <button type="button" id="pickerCancelBtn" class="btn-secondary">Annuler</button>
-              <button type="button" id="pickerChooseBtn">✓ Choisir</button>
+              <button type="button" id="pickerChooseBtn">Choisir</button>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@
       <nav class="tabs">
         <p class="nav-group-label">Général</p>
         <button class="tab-btn active" data-tab="commands"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="tab-label">Commandes</span></button>
-        <button class="tab-btn" data-tab="extras"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4L4.2 8.7l5.4-.8z"/></svg><span class="tab-label">Extras</span></button>
+        <button class="tab-btn" data-tab="extras"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg><span class="tab-label">Messages auto</span></button>
         <p class="nav-group-label">Live &amp; Stream</p>
         <button class="tab-btn" data-tab="alerts"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="tab-label">Alertes</span></button>
         <button class="tab-btn" data-tab="subathon"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span class="tab-label">Subathon</span></button>
@@ -93,6 +93,7 @@
         <p class="nav-group-label">Communauté</p>
         <button class="tab-btn" data-tab="viewerstats"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="tab-label">Stats Viewers</span></button>
         <p class="nav-group-label">Intégrations</p>
+        <button class="tab-btn" data-tab="integrations"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6"/><path d="M6 8h12v4a6 6 0 0 1-12 0z"/><path d="M12 18v4"/></svg><span class="tab-label">Intégrations</span></button>
         <button class="tab-btn" data-tab="overlays"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tab-label">Overlays (OBS)</span></button>
       </nav>
     </aside>
@@ -101,7 +102,7 @@
     <!-- === Commandes personnalisées === -->
     <section id="tab-commands" class="tab-content active">
       <div class="section-header">
-        <div class="section-icon">💬</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         <div>
           <h2>Commandes personnalisées</h2>
           <p class="section-desc">Crée, modifie ou supprime les commandes que tes viewers peuvent utiliser en chat.</p>
@@ -151,7 +152,7 @@
           <textarea id="cmdResponse" placeholder="Réponse... utilise {user} {channel} {args}"></textarea>
         </div>
         <div class="row">
-          <button type="submit">💾 Enregistrer</button>
+          <button type="submit">Enregistrer</button>
           <button type="button" id="cmdCancelBtn" class="btn-secondary">Annuler</button>
         </div>
       </form>
@@ -161,69 +162,97 @@
     <!-- === Alertes === -->
     <section id="tab-alerts" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">🔔</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
         <div>
           <h2>Alertes Follow / Sub</h2>
           <p class="section-desc">Personnalise les messages et sons déclenchés par les événements Twitch.</p>
         </div>
       </div>
-      <form id="alertsForm" class="card">
-        <label>Message follow <input id="followMessage" /></label>
-        <label>Message lancement du live (1/3) <input id="liveOnlineMessage" /></label>
-        <label>Message followers au lancement (2/3) <input id="liveFollowersMessage" /></label>
-        <label>Message nouveaux followers (3/3) <input id="liveNewFollowersMessage" /></label>
-        <p class="hint">Envoyés dans le chat quand le live démarre. Variables : <code>{category}</code> <code>{followers}</code> <code>{diff}</code> <code>{names}</code>. Laisse vide pour désactiver un message.</p>
-        <div class="sound-row" data-alert-type="follow">
-          <input type="file" accept="audio/*" class="alert-sound-file" />
-          <span class="alert-sound-current hint"></span>
-          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+      <form id="alertsForm" class="stack">
+        <div class="card panel">
+          <div class="panel-head"><h3>Abonnements &amp; soutiens</h3><p class="hint">Message envoyé dans le chat et son joué sur l'overlay d'alertes. Variables : {user} {tier} {months} {recipient} {bits}</p></div>
+          <div class="alert-item">
+            <div class="alert-item-head"><span class="alert-item-title">Follow</span></div>
+            <label>Message dans le chat <input id="followMessage" /></label>
+            <div class="sound-field"><span class="field-caption">Son sur l'overlay</span><div class="sound-row" data-alert-type="follow">
+            <input type="file" accept="audio/*" class="alert-sound-file" />
+            <span class="alert-sound-current hint"></span>
+            <button type="button" class="btn-danger alert-sound-remove hidden">Retirer</button>
+          </div></div>
+            <p class="hint">Variables propres au follow : {totalFollowers} {followsThisStream}</p>
+          </div>
+        <div class="alert-item">
+          <div class="alert-item-head"><span class="alert-item-title">Sub</span></div>
+          <label>Message dans le chat <input id="subMessage" /></label>
+          <div class="sound-field"><span class="field-caption">Son sur l'overlay</span><div class="sound-row" data-alert-type="sub">
+            <input type="file" accept="audio/*" class="alert-sound-file" />
+            <span class="alert-sound-current hint"></span>
+            <button type="button" class="btn-danger alert-sound-remove hidden">Retirer</button>
+          </div></div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-item-head"><span class="alert-item-title">Resub</span></div>
+          <label>Message dans le chat <input id="resubMessage" /></label>
+          <div class="sound-field"><span class="field-caption">Son sur l'overlay</span><div class="sound-row" data-alert-type="resub">
+            <input type="file" accept="audio/*" class="alert-sound-file" />
+            <span class="alert-sound-current hint"></span>
+            <button type="button" class="btn-danger alert-sound-remove hidden">Retirer</button>
+          </div></div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-item-head"><span class="alert-item-title">Sub offert (gift)</span></div>
+          <label>Message dans le chat <input id="giftSubMessage" /></label>
+          <div class="sound-field"><span class="field-caption">Son sur l'overlay</span><div class="sound-row" data-alert-type="giftsub">
+            <input type="file" accept="audio/*" class="alert-sound-file" />
+            <span class="alert-sound-current hint"></span>
+            <button type="button" class="btn-danger alert-sound-remove hidden">Retirer</button>
+          </div></div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-item-head"><span class="alert-item-title">Bits (cheer)</span></div>
+          <label>Message dans le chat <input id="cheerMessage" /></label>
+          <div class="sound-field"><span class="field-caption">Son sur l'overlay</span><div class="sound-row" data-alert-type="cheer">
+            <input type="file" accept="audio/*" class="alert-sound-file" />
+            <span class="alert-sound-current hint"></span>
+            <button type="button" class="btn-danger alert-sound-remove hidden">Retirer</button>
+          </div></div>
+        </div>
         </div>
 
-        <label>Message sub <input id="subMessage" /></label>
-        <div class="sound-row" data-alert-type="sub">
-          <input type="file" accept="audio/*" class="alert-sound-file" />
-          <span class="alert-sound-current hint"></span>
-          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        <div class="card panel">
+          <div class="panel-head"><h3>Lancement du live</h3><p class="hint">Trois messages envoyés dans le chat quand le live démarre. Variables : <code>{category}</code> <code>{followers}</code> <code>{diff}</code> <code>{names}</code>. Laisse un champ vide pour désactiver le message.</p></div>
+          <label>Live en ligne <input id="liveOnlineMessage" /></label>
+          <label>Nombre de followers <input id="liveFollowersMessage" /></label>
+          <label>Nouveaux followers <input id="liveNewFollowersMessage" /></label>
         </div>
 
-        <label>Message resub <input id="resubMessage" /></label>
-        <div class="sound-row" data-alert-type="resub">
-          <input type="file" accept="audio/*" class="alert-sound-file" />
-          <span class="alert-sound-current hint"></span>
-          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        <div class="card panel">
+          <div class="panel-head"><h3>Autres événements</h3><p class="hint">Messages dans le chat uniquement, sans son.</p></div>
+          <label>Succès Steam débloqué <input id="achievementMessage" /></label>
+          <p class="hint field-hint">Variables : {game} {unlocked} {total}</p>
+          <label>Raid reçu (auto-shoutout) <input id="raidMessage" /></label>
+          <p class="hint field-hint">Variables : {raider} {viewers} {game}</p>
         </div>
 
-        <label>Message gift sub <input id="giftSubMessage" /></label>
-        <div class="sound-row" data-alert-type="giftsub">
-          <input type="file" accept="audio/*" class="alert-sound-file" />
-          <span class="alert-sound-current hint"></span>
-          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        <div class="card panel">
+          <div class="panel-head"><h3>Train de la hype</h3><p class="hint">Variables : {level} {goal} {total} {topContributor} {topContributorTotal}</p></div>
+          <div class="field-grid">
+            <label>Début du train <input id="hypeTrainBeginMessage" /></label>
+            <label>Passage de niveau <input id="hypeTrainLevelUpMessage" /></label>
+            <label>« 15 secondes restantes » <input id="hypeTrainEndingSoonMessage" /></label>
+            <label>Fin du train (résumé) <input id="hypeTrainEndMessage" /></label>
+          </div>
         </div>
 
-        <label>Message cheer/bits <input id="cheerMessage" /></label>
-        <div class="sound-row" data-alert-type="cheer">
-          <input type="file" accept="audio/*" class="alert-sound-file" />
-          <span class="alert-sound-current hint"></span>
-          <button type="button" class="btn-danger alert-sound-remove hidden">✕</button>
+        <div class="card panel">
+          <div class="panel-head"><h3>Sons</h3></div>
+          <label class="checkbox"><input id="soundEnabled" type="checkbox" /> Sons activés sur l'overlay</label>
+          <label>Volume des sons d'alerte : <strong><span id="alertVolumeValue">100</span>%</strong>
+            <input id="alertVolume" type="range" min="0" max="100" value="100" />
+          </label>
         </div>
 
-        <label>Message succès Steam débloqué <input id="achievementMessage" /></label>
-        <p class="hint">Variables : {game} {unlocked} {total}. Pas de son pour ce type d'alerte.</p>
-
-        <label>Message auto-shoutout raid <input id="raidMessage" /></label>
-        <p class="hint">Variables : {raider} {viewers} {game}. Pas de son pour ce type d'alerte non plus.</p>
-
-        <label>Message début train de la hype <input id="hypeTrainBeginMessage" /></label>
-        <label>Message passage de niveau <input id="hypeTrainLevelUpMessage" /></label>
-        <label>Message "15 secondes restantes" <input id="hypeTrainEndingSoonMessage" /></label>
-        <label>Message fin du train (résumé) <input id="hypeTrainEndMessage" /></label>
-        <p class="hint">Variables : {level} {goal} {total} {topContributor} {topContributorTotal}. Pas de son sur ces alertes non plus.</p>
-
-        <label class="checkbox"><input id="soundEnabled" type="checkbox" /> Sons activés sur l'overlay</label>
-        <label>Volume des sons d'alerte (<span id="alertVolumeValue">100</span>%)
-          <input id="alertVolume" type="range" min="0" max="100" value="100" />
-        </label>
-        <button type="submit">💾 Enregistrer les alertes</button>
+        <div class="form-actions"><button type="submit">Enregistrer les alertes</button></div>
       </form>
       <div class="card" id="testEventsCard">
         <h3>Tester les events</h3>
@@ -234,22 +263,20 @@
           <input id="testCount" type="number" min="1" value="5" title="Nombre de subs offerts / bits / mois de resub" />
         </div>
         <div class="row">
-          <button type="button" class="btn-secondary" data-test="sub">⭐ Sub</button>
-          <button type="button" class="btn-secondary" data-test="resub">🔁 Resub (mois = nombre)</button>
-          <button type="button" class="btn-secondary" data-test="giftsub">🎁 Gift subs (x nombre)</button>
-          <button type="button" class="btn-secondary" data-test="cheer">💎 Bits (= nombre)</button>
+          <button type="button" class="btn-secondary" data-test="sub">Sub</button>
+          <button type="button" class="btn-secondary" data-test="resub">Resub (mois = nombre)</button>
+          <button type="button" class="btn-secondary" data-test="giftsub">Gift subs (x nombre)</button>
+          <button type="button" class="btn-secondary" data-test="cheer">Bits (= nombre)</button>
         </div>
         <p class="hint" id="testResult"></p>
       </div>
-      <p class="hint">Variables disponibles : {user} {tier} {months} {recipient} {bits} {totalFollowers} {followsThisStream}</p>
-      <p class="hint">{totalFollowers} et {followsThisStream} ne sont utilisables que dans le message de follow.</p>
       <p class="hint">Un son MP3 est optionnel pour chaque type d'alerte : il est joué sur l'overlay en plus du message.</p>
     </section>
 
     <!-- === Subathon === -->
     <section id="tab-subathon" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">⏱️</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></div>
         <div>
           <h2>Subathon</h2>
           <p class="section-desc">Pilote le chronomètre et les objectifs affichés sur l'overlay.</p>
@@ -260,16 +287,16 @@
         <div class="row">
           <button id="subathonStartBtn">▶️ Démarrer</button>
           <button id="subathonPauseBtn">⏸️ Pause</button>
-          <button id="subathonResetBtn" class="btn-danger">🔄 Réinitialiser</button>
+          <button id="subathonResetBtn" class="btn-danger">Réinitialiser</button>
         </div>
         <div class="row">
           <input id="addMinutesInput" type="number" placeholder="Minutes à ajouter" />
-          <button id="addMinutesBtn">➕ Ajouter du temps</button>
+          <button id="addMinutesBtn">Ajouter du temps</button>
         </div>
         <div class="row">
           <input id="addSubsInput" type="number" min="1" placeholder="Nombre de subs à ajouter" />
-          <label class="checkbox"><input id="addSubsTime" type="checkbox" checked /> + temps</label>
-          <button id="addSubsBtn">➕ Ajouter des subs</button>
+          <label class="checkbox"><input id="addSubsTime" type="checkbox" checked /> Ajouter le temps</label>
+          <button id="addSubsBtn">Ajouter des subs</button>
         </div>
       </div>
       <form id="subathonConfigForm" class="card">
@@ -299,11 +326,11 @@
           <label style="flex:1;">Bits pour 1 sub (mode « un seul total ») <input id="bitsPerSubEquivalent" type="number" min="1" /></label>
         </div>
         <p class="hint">Les compteurs s'additionnent sur tout le subathon et repartent à zéro avec « Réinitialiser ». Ils ne comptent que lorsque le subathon automatique est activé. L'overlay se met à jour tout seul, sans rafraîchir OBS.</p>
-        <button type="submit">💾 Enregistrer</button>
+        <button type="submit">Enregistrer</button>
       </form>
 
       <div class="card">
-        <h3>🎯 Objectifs (affichés sur l'overlay)</h3>
+        <h3>Objectifs (affichés sur l'overlay)</h3>
         <p class="hint">Cumul de subs ou de bits reçus PENDANT le subathon en cours. Ils se réinitialisent avec "Réinitialiser".</p>
         <form id="goalForm" class="row">
           <input id="goalLabel" placeholder="Nom de l'objectif (ex: Cosplay Mario)" required />
@@ -312,7 +339,7 @@
             <option value="bits">Bits cumulés</option>
           </select>
           <input id="goalTarget" type="number" min="1" placeholder="Objectif (ex: 50)" required />
-          <button type="submit">➕ Ajouter</button>
+          <button type="submit">Ajouter</button>
         </form>
         <table class="data-table" id="goalsTable">
           <thead><tr><th>Objectif</th><th>Type</th><th>Cible</th><th>Progression</th><th></th></tr></thead>
@@ -328,9 +355,9 @@
     <!-- === Extras === -->
     <section id="tab-extras" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">🧩</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
         <div>
-          <h2>Messages automatiques</h2>
+          <h2>Messages auto &amp; objectif</h2>
           <p class="section-desc">Envoyés tout seuls en chat, uniquement si le chat a été actif récemment.</p>
         </div>
       </div>
@@ -338,7 +365,7 @@
         <div class="row">
           <input id="autoMessageText" placeholder="Texte du message (ex: Rejoins le Discord : ...)" style="flex: 2;" required />
           <input id="autoMessageInterval" type="number" min="1" placeholder="Toutes les X minutes" value="30" />
-          <button type="submit">➕ Ajouter</button>
+          <button type="submit">Ajouter</button>
         </div>
       </form>
       <table class="data-table" id="autoMessagesTable">
@@ -347,7 +374,7 @@
       </table>
 
       <div class="subsection-header">
-        <div class="section-icon">🎯</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
         <h2>Objectif long terme</h2>
       </div>
       <p class="hint">Indépendant du subathon : ne se réinitialise jamais automatiquement. Idéal pour un objectif sur la durée (ex: abonnés du mois).</p>
@@ -362,18 +389,29 @@
           </select>
           <input id="ltgTarget" type="number" min="1" placeholder="Cible" />
         </div>
-        <button type="submit">💾 Enregistrer l'objectif</button>
+        <button type="submit">Enregistrer l'objectif</button>
       </form>
       <div class="card">
         <p class="hint">Progression actuelle : <span id="ltgCurrentDisplay">0</span></p>
         <div class="row">
           <input id="ltgCurrentInput" type="number" min="0" placeholder="Définir la progression manuellement" />
-          <button id="ltgCurrentSaveBtn">💾 Mettre à jour</button>
+          <button id="ltgCurrentSaveBtn">Mettre à jour</button>
         </div>
       </div>
 
+    </section>
+
+        <!-- === Intégrations === -->
+    <section id="tab-integrations" class="tab-content">
+      <div class="section-header">
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6"/><path d="M6 8h12v4a6 6 0 0 1-12 0z"/><path d="M12 18v4"/></svg></div>
+        <div>
+          <h2>Intégrations</h2>
+          <p class="section-desc">Spotify, Steam et Discord : connecte les services utilisés par les overlays et les commandes.</p>
+        </div>
+      </div>
       <div class="subsection-header">
-        <div class="section-icon">🎵</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
         <h2>Spotify (overlay Now Playing)</h2>
       </div>
       <div class="card">
@@ -382,7 +420,7 @@
       </div>
 
       <div class="subsection-header">
-        <div class="section-icon">🕹️</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4M8 10v4"/><path d="M15 13h.01M18 11h.01"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg></div>
         <h2>Steam (suivi des succès)</h2>
       </div>
       <p class="hint">La catégorie Twitch est reliée automatiquement à un jeu Steam par recherche du nom. Si ça se trompe de jeu, corrige l'AppID ci-dessous.</p>
@@ -390,7 +428,7 @@
         <label>SteamID64 (le tien)
           <input id="steamId64" placeholder="ex: 76561198012345678" />
         </label>
-        <button type="submit">💾 Enregistrer</button>
+        <button type="submit">Enregistrer</button>
       </form>
       <div class="card">
         <p class="hint">Jeu actuellement suivi : <span id="steamCurrentGame">—</span></p>
@@ -398,13 +436,13 @@
         <div class="row">
           <input id="steamCorrectCategory" placeholder="Catégorie Twitch concernée" />
           <input id="steamCorrectAppId" type="number" placeholder="AppID Steam correct" />
-          <button id="steamCorrectBtn">🔧 Corriger</button>
+          <button id="steamCorrectBtn">Corriger</button>
         </div>
         <p class="hint">Trouve l'AppID d'un jeu dans l'URL de sa page Steam (store.steampowered.com/app/<b>AppID</b>/...).</p>
       </div>
 
       <div class="subsection-header">
-        <div class="section-icon">🎬</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 3v18M17 3v18M2 9h5M2 15h5M17 9h5M17 15h5"/></svg></div>
         <h2>Discord (envoi automatique des clips)</h2>
       </div>
       <p class="hint">La commande <b>!clip</b> crée un clip Twitch et l'envoie automatiquement sur ce webhook Discord, avec un embed personnalisé.</p>
@@ -419,14 +457,14 @@
           <label style="flex:2;">Footer (optionnel) <input id="discordEmbedFooter" /></label>
         </div>
         <p class="hint">Variables disponibles : {clipper} {broadcaster} {game} {title}</p>
-        <button type="submit">💾 Enregistrer</button>
+        <button type="submit">Enregistrer</button>
       </form>
     </section>
 
     <!-- === Stats Viewers === -->
     <section id="tab-viewerstats" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">📊</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
         <div>
           <h2>Overlay Stats Viewers</h2>
           <p class="section-desc">Un seul overlay avec des onglets Niveau / Temps regardé / Messages / Abonnés, par Semaine / Mois / Session / Global.</p>
@@ -454,7 +492,7 @@
         </div>
         <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique entre les périodes (Semaine/Mois/Session/Global)</label>
         <label>Intervalle de rotation (secondes) <input id="statsRotateSeconds" type="number" min="5" /></label>
-        <button type="submit">💾 Enregistrer</button>
+        <button type="submit">Enregistrer</button>
       </form>
 
       <div class="card">
@@ -472,7 +510,7 @@
             <option value="session">Session</option>
             <option value="month">Mois</option>
           </select>
-          <button type="button" id="statsPreviewBtn">🔍 Voir</button>
+          <button type="button" id="statsPreviewBtn">Voir</button>
         </div>
         <table class="data-table" id="statsPreviewTable">
           <thead><tr><th>#</th><th>Viewer</th><th>Valeur</th><th>Abonné</th></tr></thead>
@@ -486,7 +524,7 @@
     <!-- === Sondage === -->
     <section id="tab-poll" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">🗳️</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
         <div>
           <h2>Sondage</h2>
           <p class="section-desc">Lance un sondage directement depuis le dashboard, sans passer par le chat. Les viewers votent en tapant 1, 2, 3... dans le chat.</p>
@@ -503,7 +541,7 @@
           <button type="button" id="pollAddOptionBtn">+ Ajouter une réponse</button>
           <label style="flex:1;">Durée (secondes) <input id="pollDuration" type="number" value="120" min="10" /></label>
         </div>
-        <button type="submit">🗳️ Lancer le sondage</button>
+        <button type="submit">Lancer le sondage</button>
       </form>
 
       <div class="card" id="pollLiveCard" style="display:none;">
@@ -521,7 +559,7 @@
     <!-- === Historique de stream === -->
     <section id="tab-history" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">📈</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></div>
         <div>
           <h2>Historique de stream</h2>
           <p class="section-desc">Les stats du live en cours se mettent à jour automatiquement toutes les 5 minutes, suivies de l'historique de tes lives précédents.</p>
@@ -533,7 +571,7 @@
         <p class="hint">Colle ici ton token "Socket API" depuis streamlabs.com → Réglages → API Tokens.</p>
         <div class="row">
           <input id="streamlabsTokenInput" type="password" placeholder="Token Socket API Streamlabs" style="flex:1;" />
-          <button type="button" id="streamlabsTokenSaveBtn">💾 Enregistrer</button>
+          <button type="button" id="streamlabsTokenSaveBtn">Enregistrer</button>
         </div>
       </div>
 
@@ -552,49 +590,49 @@
     <!-- === Overlays === -->
     <section id="tab-overlays" class="tab-content">
       <div class="section-header">
-        <div class="section-icon">🖥️</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
         <div>
           <h2>Liens Overlays</h2>
           <p class="section-desc">À ajouter comme Browser Source dans OBS.</p>
         </div>
       </div>
-      <ul class="overlay-links">
-        <li>🔔 Alertes follow/sub : <code id="overlayAlertsUrl"></code></li>
-        <li>⏱️ Subathon : <code id="overlaySubathonUrl"></code></li>
-        <li>🔊 Commandes vocales (TTS) : <code id="overlayTtsUrl"></code></li>
-        <li>🎉 Dernier follow/sub (permanent) : <code id="overlayLastEventsUrl"></code></li>
-        <li>🎯 Objectif long terme : <code id="overlayGoalUrl"></code></li>
-        <li>🎵 Now Playing (Spotify) : <code id="overlayNowPlayingUrl"></code></li>
-        <li>🏆 Succès Steam : <code id="overlayAchievementsUrl"></code></li>
-        <li>📊 Stats Viewers : <code id="overlayViewerStatsUrl"></code></li>
-        <li>🗳️ Sondage : <code id="overlayPollUrl"></code></li>
-      </ul>
+      <div class="overlay-list">
+        <div class="overlay-row"><span class="overlay-name">Alertes follow/sub</span><code id="overlayAlertsUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayAlertsUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Subathon</span><code id="overlaySubathonUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlaySubathonUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Commandes vocales (TTS)</span><code id="overlayTtsUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayTtsUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Dernier follow/sub (permanent)</span><code id="overlayLastEventsUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayLastEventsUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Objectif long terme</span><code id="overlayGoalUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayGoalUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Now Playing (Spotify)</span><code id="overlayNowPlayingUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayNowPlayingUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Succès Steam</span><code id="overlayAchievementsUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayAchievementsUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Stats Viewers</span><code id="overlayViewerStatsUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayViewerStatsUrl">Copier</button></div>
+        <div class="overlay-row"><span class="overlay-name">Sondage</span><code id="overlayPollUrl"></code><button type="button" class="btn-secondary copy-btn" data-copy="overlayPollUrl">Copier</button></div>
+      </div>
       <p class="hint">Recommandé : 800x300px pour les alertes, activer l'audio dans les propriétés de la source OBS.</p>
 
       <div class="subsection-header">
-        <div class="section-icon">🖼️</div>
+        <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div>
         <h2>Fonds personnalisés</h2>
       </div>
       <p class="hint">Remplace le fond noir des boîtes par une image (avec un voile sombre automatique pour garder le texte lisible). Disponible pour l'instant sur Subathon, Objectif long terme et Dernier follow/sub.</p>
 
       <div class="card" id="overlayBackgroundsCard">
         <div class="bg-upload-row" data-target="subathon">
-          <span class="bg-upload-label">⏱️ Subathon</span>
+          <span class="bg-upload-label">Subathon</span>
           <input type="file" accept="image/*" class="bg-upload-file" />
           <span class="bg-upload-status hint">Aucune image</span>
-          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+          <button type="button" class="btn-danger bg-upload-remove hidden"></button>
         </div>
         <div class="bg-upload-row" data-target="goal">
-          <span class="bg-upload-label">🎯 Objectif long terme</span>
+          <span class="bg-upload-label">Objectif long terme</span>
           <input type="file" accept="image/*" class="bg-upload-file" />
           <span class="bg-upload-status hint">Aucune image</span>
-          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+          <button type="button" class="btn-danger bg-upload-remove hidden"></button>
         </div>
         <div class="bg-upload-row" data-target="lastEvents">
-          <span class="bg-upload-label">🎉 Dernier follow/sub</span>
+          <span class="bg-upload-label">Dernier follow/sub</span>
           <input type="file" accept="image/*" class="bg-upload-file" />
           <span class="bg-upload-status hint">Aucune image</span>
-          <button type="button" class="btn-danger bg-upload-remove hidden">✕</button>
+          <button type="button" class="btn-danger bg-upload-remove hidden"></button>
         </div>
       </div>
     </section>

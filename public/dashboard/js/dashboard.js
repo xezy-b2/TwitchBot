@@ -348,7 +348,7 @@ function renderSoundList() {
   currentSoundUrls.forEach((url, index) => {
     const li = document.createElement('li');
     const shortName = url.split('/').pop();
-    li.innerHTML = `<span>🎵 ${shortName}</span><button type="button" data-remove="${index}" class="btn-danger">✕</button>`;
+    li.innerHTML = `<span>${shortName}</span><button type="button" data-remove="${index}" class="btn-danger">Retirer</button>`;
     list.appendChild(li);
     li.querySelector('[data-remove]').addEventListener('click', () => {
       currentSoundUrls.splice(index, 1);
@@ -1347,6 +1347,22 @@ document.querySelectorAll('[data-test]').forEach((btn) => {
       out.textContent = res.ok ? `✅ "${btn.dataset.test}" simulé.` : `❌ ${data.error || 'Erreur'}`;
     } catch (e) {
       out.textContent = '❌ Erreur réseau';
+    }
+  });
+});
+
+// ============ COPIER LES LIENS D'OVERLAYS ============
+document.querySelectorAll('.copy-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const text = document.getElementById(btn.dataset.copy)?.textContent || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      const old = btn.textContent;
+      btn.textContent = 'Copié ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1500);
+    } catch (e) {
+      window.prompt('Copie le lien :', text);
     }
   });
 });
