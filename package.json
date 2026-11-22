@@ -1,7 +1,7 @@
 {
   "name": "twitch-bot-dashboard",
   "version": "1.0.0",
-  "description": "Bot Twitch complet (commandes, points, gamble, subathon, alertes, TTS) + dashboard web",
+  "description": "Bot Twitch complet (commandes, subathon, alertes, TTS) + dashboard web",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {

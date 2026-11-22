@@ -1,8 +1,7 @@
 # 🎮 Bot Twitch + Dashboard
 
 Bot Twitch complet en Node.js avec :
-- Commandes de base (`!points`, `!give`, `!gamble`, `!leaderboard`, `!uptime`, `!title`, `!game`, `!setgame`, `!settitle`, `!commands`, `!addcommand`, `!delcommand`, `!subathon`, `!addtime`)
-- Système de points avec pari (**gamble**) à ratio configurable (60/40, 70/30, ou autre)
+- Plus de 40 commandes natives (infos stream, fun, stats viewers, citations, compteurs, utilitaires, modération, sondages…) — la liste complète avec descriptions est dans l'onglet **Commandes** du dashboard
 - Alertes **follow** et **sub/resub/gift sub/cheer** en temps réel (Twitch EventSub via WebSocket — aucun serveur public requis)
 - **Subathon** : timer qui s'allonge automatiquement sur sub/resub/gift/bits, pilotable depuis le dashboard
 - Commandes vocales personnalisées (**TTS**) via la Web Speech API du navigateur (gratuit, aucune clé API)
@@ -75,7 +74,7 @@ pm2 startup
 2. Clique sur **"Connecter Twitch"** en haut à droite
 3. Autorise l'application → tu es redirigé vers le dashboard, les alertes follow/sub et `!setgame`/`!settitle` sont maintenant actifs
 
-> Sans cette étape, le bot répond quand même aux commandes de base et points, mais **les alertes follow/sub ne fonctionneront pas** et `!setgame`/`!settitle` renverront une erreur.
+> Sans cette étape, le bot répond quand même aux commandes natives, mais **les alertes follow/sub ne fonctionneront pas** et `!setgame`/`!settitle` renverront une erreur.
 
 ## 7. Ajouter les overlays dans OBS
 
@@ -97,13 +96,6 @@ Coche **"Vocale (TTS)"** pour qu'une commande soit aussi lue à voix haute sur l
 
 Exemple en chat : `!addcommand discord Rejoins mon Discord : https://discord.gg/xxx`
 
-### Gamble (ratio 60/40, 70/30...)
-Dans l'onglet **"Points & Gamble"**, le champ **"Chance de gagner (%)"** définit le ratio :
-- `40` → ratio **60/40** (le viewer gagne 40% du temps)
-- `30` → ratio **70/30** (le viewer gagne 30% du temps)
-
-En chat : `!gamble 100` ou `!gamble all`
-
 ### Subathon
 Active-le dans l'onglet **"Subathon"**, configure le temps ajouté par type d'événement (sub, resub, gift, bits), puis démarre le timer. Il s'incrémente automatiquement à chaque sub/gift/cheer reçu, et tu peux aussi ajouter du temps manuellement (`!addtime 10` en chat, ou depuis le dashboard).
 
@@ -114,7 +106,7 @@ twitch-bot/
 ├── index.js                  # point d'entrée
 ├── src/
 │   ├── bot/                  # client tmi.js + dispatch des commandes
-│   ├── points/                # points + gamble
+│   ├── points/                # stats viewers, sondages, session de stream, objectifs
 │   ├── subathon/              # timer subathon
 │   ├── twitch/                 # Helix API + EventSub WebSocket
 │   ├── models/                 # schémas MongoDB (Mongoose)

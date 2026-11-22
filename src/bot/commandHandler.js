@@ -5,7 +5,7 @@ require('./builtinCommandsMeta').checkMetaConsistency(builtins);
 const { getUserLevel, hasPermission, markChatActivity } = require('./client');
 const statsManager = require('../points/statsManager');
 const pollManager = require('../points/pollManager');
-const { sendTTS, sendAlert, sendSound } = require('../sockets/io');
+const { sendTTS, sendSound } = require('../sockets/io');
 
 const cooldowns = new Map(); // clé: "channel:command:username" -> timestamp
 

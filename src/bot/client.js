@@ -1,5 +1,4 @@
 const tmi = require('tmi.js');
-const Settings = require('../models/Settings');
 
 let lastChatActivityAt = 0;
 

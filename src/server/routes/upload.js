@@ -77,7 +77,7 @@ router.post('/overlay-backgrounds/upload', (req, res) => {
     });
     const url = `/overlay-images/${image._id}`;
 
-    const settings = await Settings.findOneAndUpdate(
+    await Settings.findOneAndUpdate(
       { channel: CHANNEL },
       { $set: { [`overlayBackgrounds.${target}`]: url } },
       { upsert: true, new: true }

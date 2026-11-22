@@ -16,7 +16,7 @@ const longTermGoalManager = require('./src/points/longTermGoalManager');
 const statsManager = require('./src/points/statsManager');
 const streamSessionManager = require('./src/points/streamSessionManager');
 const StreamSession = require('./src/models/StreamSession');
-const { connectStreamlabs, disconnectStreamlabs } = require('./src/streamlabs/streamlabsClient');
+const { connectStreamlabs } = require('./src/streamlabs/streamlabsClient');
 const Settings = require('./src/models/Settings');
 const LastEventState = require('./src/models/LastEventState');
 const TwitchToken = require('./src/models/TwitchToken');
@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 3000;
 
 async function main() {
   await connectDB();
+  // Migration : l'onglet « Monnaie » des stats n'existe plus
+  await Settings.updateMany({ 'statsOverlay.defaultMetric': 'currency' }, { $set: { 'statsOverlay.defaultMetric': 'uptime' } });
 
   // S'assure qu'un document Settings existe pour la chaîne
   await Settings.findOneAndUpdate({ channel: CHANNEL }, {}, { upsert: true, setDefaultsOnInsert: true });

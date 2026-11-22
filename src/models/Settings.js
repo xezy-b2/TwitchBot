@@ -47,11 +47,11 @@ const settingsSchema = new mongoose.Schema({
     embedFooter: { type: String, default: '' }
   },
 
-  // --- Overlay stats viewers (onglets Level / Uptime / Msg / Currency / Subs, par période) ---
+  // --- Overlay stats viewers (onglets Level / Uptime / Msg / Subs, par période) ---
   statsOverlay: {
     title: { type: String, default: 'LeaderBoard' },
     topCount: { type: Number, default: 10, min: 3, max: 25 },
-    defaultMetric: { type: String, enum: ['uptime', 'messages', 'level', 'currency', 'subs'], default: 'uptime' },
+    defaultMetric: { type: String, enum: ['uptime', 'messages', 'level', 'subs'], default: 'uptime' },
     showLevelTab: { type: Boolean, default: true },
     showUptimeTab: { type: Boolean, default: true },
     showMessagesTab: { type: Boolean, default: true },
