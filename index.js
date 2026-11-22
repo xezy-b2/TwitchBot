@@ -266,6 +266,7 @@ async function main() {
     await startFollowPolling(CHANNEL, broadcasterId, (data) => handleTwitchEvent('follow', data));
   }
   app.locals.restartEventSub = restartEventSub;
+  app.locals.handleTwitchEvent = handleTwitchEvent; // utilisé par le panneau « Tester les events » du dashboard
 
   // Appelé après qu'un compte Spotify vient d'être connecté depuis le dashboard
   app.locals.onSpotifyConnected = async () => {

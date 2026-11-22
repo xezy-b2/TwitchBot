@@ -252,6 +252,22 @@
         </label>
         <button type="submit">💾 Enregistrer les alertes</button>
       </form>
+      <div class="card" id="testEventsCard">
+        <h3>Tester les events</h3>
+        <p class="hint">Simule un event Twitch : alerte à l'écran, message dans le chat, stats et subathon (si activé) sont réellement déclenchés. Pense à « Réinitialiser » le subathon après tes essais.</p>
+        <div class="row">
+          <input id="testUser" placeholder="Pseudo (TestViewer)" />
+          <select id="testTier"><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
+          <input id="testCount" type="number" min="1" value="5" title="Nombre de subs offerts / bits / mois de resub" />
+        </div>
+        <div class="row">
+          <button type="button" class="btn-secondary" data-test="sub">⭐ Sub</button>
+          <button type="button" class="btn-secondary" data-test="resub">🔁 Resub (mois = nombre)</button>
+          <button type="button" class="btn-secondary" data-test="giftsub">🎁 Gift subs (x nombre)</button>
+          <button type="button" class="btn-secondary" data-test="cheer">💎 Bits (= nombre)</button>
+        </div>
+        <p class="hint" id="testResult"></p>
+      </div>
       <p class="hint">Variables disponibles : {user} {tier} {months} {recipient} {bits} {totalFollowers} {followsThisStream}</p>
       <p class="hint">{totalFollowers} et {followsThisStream} ne sont utilisables que dans le message de follow.</p>
       <p class="hint">Un son MP3 est optionnel pour chaque type d'alerte : il est joué sur l'overlay en plus du message.</p>

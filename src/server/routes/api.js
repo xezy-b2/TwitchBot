@@ -115,6 +115,30 @@ router.post('/subathon/addtime', async (req, res) => {
 });
 
 // Ajout manuel de subs (ex. des subs qui n'ont pas été reçus) : compteur + temps selon les réglages.
+// Simulation d'un event Twitch (panneau de test du dashboard) : passe par le même traitement que les vrais events.
+router.post('/test-event', async (req, res) => {
+  const handler = req.app.locals.handleTwitchEvent;
+  if (!handler) return res.status(503).json({ error: 'Bot pas encore prêt' });
+  const { type } = req.body;
+  const user = String(req.body.user || 'TestViewer').slice(0, 25);
+  const tier = ['1', '2', '3'].includes(String(req.body.tier)) ? String(req.body.tier) : '1';
+  const count = Math.min(500, Math.max(1, parseInt(req.body.count, 10) || 1));
+  const payloads = {
+    sub: { user, tier },
+    resub: { user, tier, months: count },
+    giftsub: { user, tier, total: count },
+    cheer: { user, bits: count }
+  };
+  if (!payloads[type]) return res.status(400).json({ error: 'Type inconnu' });
+  try {
+    await handler(type, payloads[type]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[Test] Erreur sur la simulation :', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/subathon/addsubs', async (req, res) => {
   const subs = Math.max(0, parseInt(req.body.subs, 10) || 0);
   if (!subs) return res.status(400).json({ error: 'Nombre de subs invalide' });

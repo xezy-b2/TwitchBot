@@ -1368,3 +1368,28 @@ document.getElementById('streamlabsTokenSaveBtn').addEventListener('click', asyn
 loadLiveSession();
 setInterval(loadLiveSession, 5 * 60 * 1000); // se remet à jour toutes les 5 minutes, comme demandé
 loadHistoryPage();
+
+
+// ============ TESTER LES EVENTS ============
+document.querySelectorAll('[data-test]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const out = document.getElementById('testResult');
+    out.textContent = 'Envoi...';
+    try {
+      const res = await fetch('/api/test-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: btn.dataset.test,
+          user: document.getElementById('testUser').value.trim() || 'TestViewer',
+          tier: document.getElementById('testTier').value,
+          count: document.getElementById('testCount').value
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      out.textContent = res.ok ? `✅ "${btn.dataset.test}" simulé.` : `❌ ${data.error || 'Erreur'}`;
+    } catch (e) {
+      out.textContent = '❌ Erreur réseau';
+    }
+  });
+});
