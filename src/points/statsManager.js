@@ -1,6 +1,5 @@
 const UserStats = require('../models/UserStats');
 const StatsPeriodState = require('../models/StatsPeriodState');
-const User = require('../models/User');
 
 function getWeekStart(date = new Date()) {
   const d = new Date(date);
@@ -103,19 +102,13 @@ const PERIOD_FIELDS = {
 };
 
 /**
- * Classement unifié : metric = 'uptime' | 'messages' | 'level' | 'currency' | 'subs',
- * period = 'week' | 'month' | 'session' | 'global' (ignoré pour 'level' et 'currency',
- * qui sont toujours calculés sur l'ensemble de la période connue).
+ * Classement unifié : metric = 'uptime' | 'messages' | 'level' | 'subs',
+ * period = 'week' | 'month' | 'session' | 'global' (ignoré pour 'level',
+ * qui est toujours calculé sur l'ensemble de la période connue).
  */
 async function getLeaderboard(channel, metric, period, limit = 10) {
   channel = channel.toLowerCase();
   const fields = PERIOD_FIELDS[period] || PERIOD_FIELDS.global;
-
-  if (metric === 'currency') {
-    const top = await User.find({ channel }).sort({ points: -1 }).limit(limit).lean();
-    const entries = top.map((u) => ({ username: u.username, value: u.points, level: null, isSubscriber: null }));
-    return attachAvatars(channel, entries);
-  }
 
   const query = { channel };
   if (metric === 'subs') query.isSubscriber = true;

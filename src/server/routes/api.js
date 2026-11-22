@@ -7,7 +7,6 @@ const TwitchToken = require('../../models/TwitchToken');
 const SpotifyToken = require('../../models/SpotifyToken');
 const AutoMessage = require('../../models/AutoMessage');
 const AchievementState = require('../../models/AchievementState');
-const { getLeaderboard } = require('../../points/pointsManager');
 const subathonManager = require('../../subathon/subathonManager');
 const longTermGoalManager = require('../../points/longTermGoalManager');
 const achievementTracker = require('../../steam/achievementTracker');
@@ -74,7 +73,7 @@ router.delete('/commands/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// --- Settings (points, gamble, alertes, subathon config) ---
+// --- Settings (alertes, subathon config) ---
 router.get('/settings', async (req, res) => {
   let settings = await Settings.findOne({ channel: CHANNEL });
   if (!settings) settings = await Settings.create({ channel: CHANNEL });
@@ -190,12 +189,6 @@ router.post('/subathon/goals/navigate', (req, res) => {
   res.json({ ok: true });
 });
 
-// --- Stats ---
-router.get('/stats/leaderboard', async (req, res) => {
-  const top = await getLeaderboard(CHANNEL, 20);
-  res.json(top);
-});
-
 // --- Statut de connexion Twitch (OAuth) ---
 router.get('/twitch/status', async (req, res) => {
   const token = await TwitchToken.findOne({ channel: CHANNEL });
@@ -294,7 +287,7 @@ router.put('/steam/mapping', async (req, res) => {
 
 // --- Stats viewers (aperçu depuis le dashboard) ---
 router.get('/viewerstats/leaderboard', async (req, res) => {
-  const metric = ['uptime', 'messages', 'level', 'currency', 'subs'].includes(req.query.metric) ? req.query.metric : 'uptime';
+  const metric = ['uptime', 'messages', 'level', 'subs'].includes(req.query.metric) ? req.query.metric : 'uptime';
   const period = ['week', 'month', 'session', 'global'].includes(req.query.period) ? req.query.period : 'global';
   const leaderboard = await statsManager.getLeaderboard(CHANNEL, metric, period, 25);
   res.json(leaderboard);

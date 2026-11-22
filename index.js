@@ -3,7 +3,7 @@ const http = require('http');
 const connectDB = require('./src/config/db');
 const createApp = require('./src/server/app');
 const { createSocketServer, sendAlert } = require('./src/sockets/io');
-const { createBotClient, startPassivePointsLoop } = require('./src/bot/client');
+const { createBotClient } = require('./src/bot/client');
 const { attachHandlers: attachCommandHandlers } = require('./src/bot/commandHandler');
 const { startAutoMessageLoop } = require('./src/bot/autoMessages');
 const { startEventSub } = require('./src/twitch/eventsub');
@@ -55,7 +55,6 @@ async function main() {
   await client.connect();
   app.locals.client = client;
   attachCommandHandlers(client, io, broadcasterId);
-  startPassivePointsLoop(CHANNEL);
   startAutoMessageLoop(CHANNEL, client);
 
   /** Met à jour l'état persistant "dernier follower / dernier sub" (overlay permanent). */

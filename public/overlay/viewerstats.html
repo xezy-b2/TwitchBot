@@ -241,9 +241,9 @@
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    const metricLabels = { uptime: 'UPTIME', messages: 'MSG', level: 'LEVELS', currency: 'CURRENCY', subs: 'SUBS' };
+    const metricLabels = { uptime: 'UPTIME', messages: 'MSG', level: 'LEVELS', subs: 'SUBS' };
     const periodLabels = { global: 'GLOBAL', week: 'WEEK', session: 'SESSION', month: 'MONTH' };
-    const metricOrder = ['level', 'uptime', 'messages', 'currency', 'subs'];
+    const metricOrder = ['level', 'uptime', 'messages', 'subs'];
     const periodOrder = ['global', 'week', 'session', 'month'];
 
     const fixedMetric = metricOrder.includes(params.get('metric')) ? params.get('metric') : null;
@@ -263,7 +263,6 @@
     function formatValue(metric, value, pointsName) {
       if (metric === 'level') return `Lv.${value}`;
       if (metric === 'messages') return `${value} msg`;
-      if (metric === 'currency') return `${value} ${pointsName || 'pts'}`;
       // uptime / subs : en heures si >= 60 min, sinon en minutes
       return value >= 60 ? `${Math.floor(value / 60)}H` : `${value}M`;
     }
@@ -281,7 +280,6 @@
         if (m === 'level') return settingsCfg.showLevelTab !== false;
         if (m === 'uptime') return settingsCfg.showUptimeTab !== false;
         if (m === 'messages') return settingsCfg.showMessagesTab !== false;
-        if (m === 'currency') return settingsCfg.showCurrencyTab !== false;
         if (m === 'subs') return settingsCfg.showSubsTab !== false;
         return true;
       });

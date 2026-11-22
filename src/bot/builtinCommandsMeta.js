@@ -7,36 +7,6 @@
  * (un contrôle automatique au démarrage signale les oublis dans la console).
  */
 const meta = {
-  // --- Points ---
-  points: {
-    group: 'Points',
-    usage: '!points [@pseudo]',
-    description: 'Affiche le solde de points d\'un viewer (le sien par défaut).',
-    output: '« Pseudo a 120 points. »',
-    userLevel: 'everyone'
-  },
-  give: {
-    group: 'Points',
-    usage: '!give @pseudo montant',
-    description: 'Donne une partie de ses points à un autre viewer.',
-    output: '« Pseudo a donné 50 points à Autre ! » (ou un message d\'erreur si le solde est insuffisant)',
-    userLevel: 'everyone'
-  },
-  gamble: {
-    group: 'Points',
-    usage: '!gamble montant | all',
-    description: 'Parie des points : le viewer gagne ou perd sa mise selon les réglages de pari.',
-    output: '« 🎉 Pseudo a gagné son pari… » ou « 💀 Pseudo a perdu… », avec le nouveau solde',
-    userLevel: 'everyone'
-  },
-  leaderboard: {
-    group: 'Points',
-    usage: '!leaderboard',
-    description: 'Affiche le top 5 des viewers ayant le plus de points.',
-    output: '« 🏆 Classement points : 1. Pseudo (500) | 2. … »',
-    userLevel: 'everyone'
-  },
-
   // --- Infos stream ---
   uptime: {
     group: 'Infos stream',

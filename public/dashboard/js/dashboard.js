@@ -847,19 +847,6 @@ document.getElementById('goalForm').addEventListener('submit', async (e) => {
   loadGoals();
 });
 
-// ============ CLASSEMENT ============
-async function loadLeaderboard() {
-  const res = await fetch('/api/stats/leaderboard');
-  const users = await res.json();
-  const tbody = document.querySelector('#leaderboardTable tbody');
-  tbody.innerHTML = '';
-  users.forEach((u, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i + 1}</td><td>${u.username}</td><td>${u.points}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
 // ============ OVERLAYS ============
 function setupOverlayLinks() {
   const base = window.location.origin;
@@ -1032,7 +1019,6 @@ async function loadStatsOverlaySettings() {
   document.getElementById('statsShowLevelTab').checked = cfg.showLevelTab !== false;
   document.getElementById('statsShowUptimeTab').checked = cfg.showUptimeTab !== false;
   document.getElementById('statsShowMessagesTab').checked = cfg.showMessagesTab !== false;
-  document.getElementById('statsShowCurrencyTab').checked = cfg.showCurrencyTab !== false;
   document.getElementById('statsShowSubsTab').checked = cfg.showSubsTab !== false;
   document.getElementById('statsAutoRotate').checked = cfg.autoRotate !== false;
   document.getElementById('statsRotateSeconds').value = cfg.rotateSeconds ?? 15;
@@ -1051,7 +1037,6 @@ document.getElementById('statsOverlayForm').addEventListener('submit', async (e)
         showLevelTab: document.getElementById('statsShowLevelTab').checked,
         showUptimeTab: document.getElementById('statsShowUptimeTab').checked,
         showMessagesTab: document.getElementById('statsShowMessagesTab').checked,
-        showCurrencyTab: document.getElementById('statsShowCurrencyTab').checked,
         showSubsTab: document.getElementById('statsShowSubsTab').checked,
         autoRotate: document.getElementById('statsAutoRotate').checked,
         rotateSeconds: parseInt(document.getElementById('statsRotateSeconds').value, 10) || 15
@@ -1064,7 +1049,6 @@ document.getElementById('statsOverlayForm').addEventListener('submit', async (e)
 function formatStatsPreviewValue(metric, value) {
   if (metric === 'level') return `Lv.${value}`;
   if (metric === 'messages') return `${value} msg`;
-  if (metric === 'currency') return `${value} pts`;
   return value >= 60 ? `${Math.floor(value / 60)}h${(value % 60).toString().padStart(2, '0')}` : `${value}m`;
 }
 
@@ -1131,7 +1115,6 @@ loadCommands();
 loadSettings();
 loadSubathon();
 loadGoals();
-loadLeaderboard();
 loadAutoMessages();
 loadLongTermGoal();
 loadSpotifyStatus();
@@ -1140,7 +1123,6 @@ loadStatsOverlaySettings();
 loadStatsPreview();
 loadOverlayBackgrounds();
 setupOverlayLinks();
-setInterval(loadLeaderboard, 30000);
 
 // ============ SONDAGE ============
 document.getElementById('pollAddOptionBtn').addEventListener('click', () => {

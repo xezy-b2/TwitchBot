@@ -4,20 +4,6 @@ const settingsSchema = new mongoose.Schema({
   channel: { type: String, required: true, unique: true, lowercase: true },
 
   prefix: { type: String, default: '!' },
-  pointsName: { type: String, default: 'points' },
-
-  // --- Points passifs (donnés pendant que les gens chattent) ---
-  pointsPerInterval: { type: Number, default: 5 },     // points gagnés
-  intervalMinutes: { type: Number, default: 10 },      // toutes les X minutes
-
-  // --- Gamble / Pari ---
-  // winChance = chance de gagner en % (40 => ratio "60/40", 30 => ratio "70/30")
-  gamble: {
-    winChance: { type: Number, default: 40, min: 1, max: 99 },
-    minBet: { type: Number, default: 10 },
-    cooldownSeconds: { type: Number, default: 10 }
-  },
-
   // --- Alertes follow / sub ---
   alerts: {
     followMessage: { type: String, default: '🎉 {user} vient de follow la chaîne ! Nous sommes désormais {totalFollowers} follows (+{followsThisStream} pendant ce live) !' },
@@ -69,7 +55,6 @@ const settingsSchema = new mongoose.Schema({
     showLevelTab: { type: Boolean, default: true },
     showUptimeTab: { type: Boolean, default: true },
     showMessagesTab: { type: Boolean, default: true },
-    showCurrencyTab: { type: Boolean, default: true },
     showSubsTab: { type: Boolean, default: true },
     autoRotate: { type: Boolean, default: true },
     rotateSeconds: { type: Number, default: 15, min: 5 }

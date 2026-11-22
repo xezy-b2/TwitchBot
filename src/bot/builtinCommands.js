@@ -1,6 +1,4 @@
 const Command = require('../models/Command');
-const { getPoints, transferPoints, getLeaderboard } = require('../points/pointsManager');
-const { gamble } = require('../points/gamble');
 const { getStreamByLogin, getChannelInfo, setChannelGame, setChannelTitle, createClip, getClipInfo, getUserByLogin, getFollowDate } = require('../twitch/helixClient');
 const { sendClipToDiscord } = require('../discord/discordWebhook');
 const subathonManager = require('../subathon/subathonManager');
@@ -18,42 +16,6 @@ const FC_COOLDOWN_MS = 15 * 1000;
  * et doit renvoyer une string à envoyer dans le chat (ou null pour ne rien dire).
  */
 const builtins = {
-  // --- Points ---
-  async points(ctx) {
-    const target = ctx.args[0]?.replace('@', '') || ctx.tags.username;
-    const pts = await getPoints(ctx.channel, target);
-    return `${target} a ${pts} ${ctx.settings.pointsName}.`;
-  },
-
-  async give(ctx) {
-    const target = ctx.args[0]?.replace('@', '');
-    const amount = parseInt(ctx.args[1], 10);
-    if (!target || !Number.isInteger(amount) || amount <= 0) {
-      return `Utilisation : !give @pseudo montant`;
-    }
-    const result = await transferPoints(ctx.channel, ctx.tags.username, target, amount);
-    if (!result.ok) return result.error;
-    return `${ctx.tags.username} a donné ${amount} ${ctx.settings.pointsName} à ${target} !`;
-  },
-
-  async gamble(ctx) {
-    const amountArg = ctx.args[0];
-    if (!amountArg) return `Utilisation : !gamble montant (ou "all")`;
-    const result = await gamble(ctx.channel, ctx.tags.username, amountArg, ctx.settings);
-    if (!result.ok) return result.error;
-    if (result.won) {
-      return `🎉 ${ctx.tags.username} a gagné son pari et remporte ${result.amount} ${ctx.settings.pointsName} ! Nouveau solde : ${result.newBalance}.`;
-    }
-    return `💀 ${ctx.tags.username} a perdu ${result.amount} ${ctx.settings.pointsName}. Nouveau solde : ${result.newBalance}.`;
-  },
-
-  async leaderboard(ctx) {
-    const top = await getLeaderboard(ctx.channel, 5);
-    if (top.length === 0) return `Aucun classement pour le moment.`;
-    const list = top.map((u, i) => `${i + 1}. ${u.username} (${u.points})`).join(' | ');
-    return `🏆 Classement ${ctx.settings.pointsName} : ${list}`;
-  },
-
   // --- Info stream ---
   async uptime(ctx) {
     const stream = await getStreamByLogin(ctx.channel);

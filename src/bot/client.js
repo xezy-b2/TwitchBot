@@ -1,8 +1,6 @@
 const tmi = require('tmi.js');
-const { grantPassivePoints } = require('../points/pointsManager');
 const Settings = require('../models/Settings');
 
-const activeChatters = new Set();
 let lastChatActivityAt = 0;
 
 function createBotClient() {
@@ -36,27 +34,6 @@ function hasPermission(userLevel, requiredLevel) {
   return LEVEL_RANK[userLevel] >= LEVEL_RANK[requiredLevel];
 }
 
-/** Démarre le tracking des points passifs : toutes les X minutes (settings.intervalMinutes), crédite les chatteurs actifs. */
-function startPassivePointsLoop(channel) {
-  let elapsedMinutes = 0;
-  setInterval(async () => {
-    elapsedMinutes += 1;
-    const settings = await Settings.findOne({ channel: channel.toLowerCase() });
-    const intervalMinutes = settings?.intervalMinutes ?? 10;
-    if (elapsedMinutes < intervalMinutes) return;
-    elapsedMinutes = 0;
-
-    if (activeChatters.size === 0) return;
-    const amount = settings?.pointsPerInterval ?? 5;
-    await grantPassivePoints(channel, [...activeChatters], amount);
-    activeChatters.clear();
-  }, 60 * 1000); // vérification chaque minute
-}
-
-function trackChatter(username) {
-  activeChatters.add(username.toLowerCase());
-}
-
 /** Marque le chat comme actif à l'instant présent (appelé à chaque message reçu). */
 function markChatActivity() {
   lastChatActivityAt = Date.now();
@@ -71,8 +48,6 @@ module.exports = {
   createBotClient,
   getUserLevel,
   hasPermission,
-  startPassivePointsLoop,
-  trackChatter,
   markChatActivity,
   isChatActive
 };

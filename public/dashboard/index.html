@@ -91,7 +91,6 @@
         <button class="tab-btn" data-tab="poll"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="tab-label">Sondage</span></button>
         <button class="tab-btn" data-tab="history"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg><span class="tab-label">Historique</span></button>
         <p class="nav-group-label">Communauté</p>
-        <button class="tab-btn" data-tab="leaderboard"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="tab-label">Classement</span></button>
         <button class="tab-btn" data-tab="viewerstats"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="tab-label">Stats Viewers</span></button>
         <p class="nav-group-label">Intégrations</p>
         <button class="tab-btn" data-tab="overlays"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tab-label">Overlays (OBS)</span></button>
@@ -328,21 +327,6 @@
       </div>
     </section>
 
-    <!-- === Classement === -->
-    <section id="tab-leaderboard" class="tab-content">
-      <div class="section-header">
-        <div class="section-icon">🏆</div>
-        <div>
-          <h2>Classement des points</h2>
-          <p class="section-desc">Le top des viewers selon leur solde de points actuel.</p>
-        </div>
-      </div>
-      <table class="data-table" id="leaderboardTable">
-        <thead><tr><th>#</th><th>Utilisateur</th><th>Points</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
     <!-- === Extras === -->
     <section id="tab-extras" class="tab-content">
       <div class="section-header">
@@ -459,7 +443,6 @@
               <option value="uptime">Temps regardé</option>
               <option value="level">Niveau</option>
               <option value="messages">Messages</option>
-              <option value="currency">Monnaie (points)</option>
               <option value="subs">Abonnés</option>
             </select>
           </label>
@@ -469,7 +452,6 @@
           <label class="checkbox"><input id="statsShowLevelTab" type="checkbox" /> Niveau</label>
           <label class="checkbox"><input id="statsShowUptimeTab" type="checkbox" /> Temps regardé</label>
           <label class="checkbox"><input id="statsShowMessagesTab" type="checkbox" /> Messages</label>
-          <label class="checkbox"><input id="statsShowCurrencyTab" type="checkbox" /> Monnaie</label>
           <label class="checkbox"><input id="statsShowSubsTab" type="checkbox" /> Abonnés</label>
         </div>
         <label class="checkbox"><input id="statsAutoRotate" type="checkbox" /> Rotation automatique entre les périodes (Semaine/Mois/Session/Global)</label>
@@ -484,7 +466,6 @@
             <option value="uptime">Temps regardé</option>
             <option value="level">Niveau</option>
             <option value="messages">Messages</option>
-            <option value="currency">Monnaie</option>
             <option value="subs">Abonnés</option>
           </select>
           <select id="statsPreviewPeriod">

@@ -2,7 +2,7 @@ const Settings = require('../models/Settings');
 const Command = require('../models/Command');
 const builtins = require('./builtinCommands');
 require('./builtinCommandsMeta').checkMetaConsistency(builtins);
-const { getUserLevel, hasPermission, trackChatter, markChatActivity } = require('./client');
+const { getUserLevel, hasPermission, markChatActivity } = require('./client');
 const statsManager = require('../points/statsManager');
 const pollManager = require('../points/pollManager');
 const { sendTTS, sendAlert, sendSound } = require('../sockets/io');
@@ -37,7 +37,6 @@ function attachHandlers(client, io, broadcasterId) {
   client.on('message', async (channelRaw, tags, message, self) => {
     if (self) return;
     const channel = channelRaw.replace('#', '').toLowerCase();
-    trackChatter(tags.username);
     markChatActivity();
     statsManager.recordMessage(channel, tags.username);
 
