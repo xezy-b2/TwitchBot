@@ -633,6 +633,7 @@ async function loadSettings() {
   document.getElementById('secondsPerSubT2').value = s.subathon.secondsPerSubT2;
   document.getElementById('secondsPerSubT3').value = s.subathon.secondsPerSubT3;
   document.getElementById('secondsPerGiftSub').value = s.subathon.secondsPerGiftSub;
+  document.getElementById('secondsPerFollow').value = s.subathon.secondsPerFollow ?? 0;
   document.getElementById('secondsPer100Bits').value = s.subathon.secondsPer100Bits;
   document.getElementById('maxSeconds').value = s.subathon.maxSeconds;
   document.getElementById('goalsPerPage').value = s.subathon.goalsPerPage ?? 4;
@@ -697,6 +698,7 @@ document.getElementById('subathonConfigForm').addEventListener('submit', async (
         secondsPerSubT2: parseInt(document.getElementById('secondsPerSubT2').value, 10),
         secondsPerSubT3: parseInt(document.getElementById('secondsPerSubT3').value, 10),
         secondsPerGiftSub: parseInt(document.getElementById('secondsPerGiftSub').value, 10),
+        secondsPerFollow: Math.max(0, parseInt(document.getElementById('secondsPerFollow').value, 10) || 0),
         secondsPer100Bits: parseInt(document.getElementById('secondsPer100Bits').value, 10),
         maxSeconds: parseInt(document.getElementById('maxSeconds').value, 10),
         goalsPerPage: Math.min(5, Math.max(3, parseInt(document.getElementById('goalsPerPage').value, 10) || 4)),
@@ -803,8 +805,10 @@ function renderGoals(goals) {
       <td>${goal.type === 'subs' ? 'Subs' : 'Bits'}</td>
       <td>${goal.target}</td>
       <td>${current}/${goal.target} (${pct}%)</td>
-      <td><button data-del-goal="${goal._id}" class="btn-danger">🗑️</button></td>`;
+      <td class="row-actions"><button type="button" data-edit-goal="${goal._id}" class="btn-secondary">Modifier</button> <button type="button" data-del-goal="${goal._id}" class="btn-danger">Supprimer</button></td>`;
     tbody.appendChild(tr);
+
+    tr.querySelector('[data-edit-goal]').addEventListener('click', () => startEditGoal(goal));
 
     tr.querySelector('[data-del-goal]').addEventListener('click', async () => {
       await fetch(`/api/subathon/goals/${goal._id}`, { method: 'DELETE' });
@@ -813,18 +817,40 @@ function renderGoals(goals) {
   });
 }
 
+function resetGoalForm() {
+  document.getElementById('goalForm').reset();
+  document.getElementById('goalId').value = '';
+  document.getElementById('goalSubmitBtn').textContent = 'Ajouter';
+  document.getElementById('goalCancelBtn').classList.add('hidden');
+}
+
+/** Charge un objectif dans le formulaire pour le modifier. */
+function startEditGoal(goal) {
+  document.getElementById('goalId').value = goal._id;
+  document.getElementById('goalLabel').value = goal.label;
+  document.getElementById('goalType').value = goal.type;
+  document.getElementById('goalTarget').value = goal.target;
+  document.getElementById('goalSubmitBtn').textContent = 'Enregistrer la modification';
+  document.getElementById('goalCancelBtn').classList.remove('hidden');
+  document.getElementById('goalLabel').focus();
+}
+
+document.getElementById('goalCancelBtn').addEventListener('click', resetGoalForm);
+
 document.getElementById('goalForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  await fetch('/api/subathon/goals', {
-    method: 'POST',
+  const id = document.getElementById('goalId').value;
+  const payload = {
+    label: document.getElementById('goalLabel').value,
+    type: document.getElementById('goalType').value,
+    target: parseInt(document.getElementById('goalTarget').value, 10)
+  };
+  await fetch(id ? `/api/subathon/goals/${id}` : '/api/subathon/goals', {
+    method: id ? 'PUT' : 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      label: document.getElementById('goalLabel').value,
-      type: document.getElementById('goalType').value,
-      target: parseInt(document.getElementById('goalTarget').value, 10)
-    })
+    body: JSON.stringify(payload)
   });
-  e.target.reset();
+  resetGoalForm();
   loadGoals();
 });
 

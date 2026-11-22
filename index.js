@@ -112,6 +112,9 @@ async function main() {
         .replace('{followsThisStream}', data.followsThisStream ?? '?');
       await updateLastEventState({ lastFollowerName: data.user, lastFollowerAt: new Date() });
       await longTermGoalManager.recordEvent(CHANNEL, 'follows', 1);
+      if (settings.subathon?.secondsPerFollow > 0) {
+        await countSubathon(settings, { seconds: settings.subathon.secondsPerFollow }, type);
+      }
     } else if (type === 'streamonline') {
       isLive = true;
       await resetStreamFollowCounter(CHANNEL);

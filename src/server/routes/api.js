@@ -126,7 +126,8 @@ router.post('/test-event', async (req, res) => {
     sub: { user, tier },
     resub: { user, tier, months: count },
     giftsub: { user, tier, total: count },
-    cheer: { user, bits: count }
+    cheer: { user, bits: count },
+    follow: { user, totalFollowers: '?', followsThisStream: '?' }
   };
   if (!payloads[type]) return res.status(400).json({ error: 'Type inconnu' });
   try {
@@ -173,7 +174,14 @@ router.post('/subathon/goals', async (req, res) => {
 });
 
 router.put('/subathon/goals/:id', async (req, res) => {
-  const goal = await subathonManager.updateGoal(CHANNEL, req.params.id, req.body);
+  // Seuls ces champs sont modifiables (on ne laisse pas passer le reste du body tel quel)
+  const updates = {};
+  if (typeof req.body.label === 'string' && req.body.label.trim()) updates.label = req.body.label.trim();
+  if (['subs', 'bits'].includes(req.body.type)) updates.type = req.body.type;
+  const target = parseInt(req.body.target, 10);
+  if (target >= 1) updates.target = target;
+  const goal = await subathonManager.updateGoal(CHANNEL, req.params.id, updates);
+  if (!goal) return res.status(404).json({ error: 'Objectif introuvable' });
   res.json(goal);
 });
 

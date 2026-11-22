@@ -74,6 +74,7 @@ const settingsSchema = new mongoose.Schema({
     secondsPerSubT2: { type: Number, default: 600 },
     secondsPerSubT3: { type: Number, default: 1800 },
     secondsPerGiftSub: { type: Number, default: 300 },
+    secondsPerFollow: { type: Number, default: 0, min: 0 }, // 0 = les follows n'ajoutent pas de temps
     secondsPer100Bits: { type: Number, default: 120 },
     maxSeconds: { type: Number, default: 0 }, // 0 = pas de limite
     // Pagination des objectifs sur l'overlay (évite d'en afficher trop d'un coup)

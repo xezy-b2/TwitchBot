@@ -265,6 +265,7 @@
           <button type="button" class="btn-secondary" data-test="sub">Sub</button>
           <button type="button" class="btn-secondary" data-test="resub">Resub (mois = nombre)</button>
           <button type="button" class="btn-secondary" data-test="giftsub">Gift subs (x nombre)</button>
+          <button type="button" class="btn-secondary" data-test="follow">Follow</button>
           <button type="button" class="btn-secondary" data-test="cheer">Bits (= nombre)</button>
         </div>
         <p class="hint" id="testResult"></p>
@@ -305,6 +306,7 @@
         <label>Secondes / sub Tier 2 <input id="secondsPerSubT2" type="number" /></label>
         <label>Secondes / sub Tier 3 <input id="secondsPerSubT3" type="number" /></label>
         <label>Secondes / sub cadeau <input id="secondsPerGiftSub" type="number" /></label>
+        <label>Secondes / follow (0 = aucun temps ajouté) <input id="secondsPerFollow" type="number" min="0" /></label>
         <label>Secondes / 100 bits <input id="secondsPer100Bits" type="number" /></label>
         <label>Durée max en secondes (0 = illimité) <input id="maxSeconds" type="number" /></label>
         <div class="row">
@@ -332,13 +334,15 @@
         <h3>Objectifs (affichés sur l'overlay)</h3>
         <p class="hint">Cumul de subs ou de bits reçus PENDANT le subathon en cours. Ils se réinitialisent avec "Réinitialiser".</p>
         <form id="goalForm" class="row">
+          <input id="goalId" type="hidden" />
           <input id="goalLabel" placeholder="Nom de l'objectif (ex: Cosplay Mario)" required />
           <select id="goalType">
             <option value="subs">Subs cumulés</option>
             <option value="bits">Bits cumulés</option>
           </select>
           <input id="goalTarget" type="number" min="1" placeholder="Objectif (ex: 50)" required />
-          <button type="submit">Ajouter</button>
+          <button type="submit" id="goalSubmitBtn">Ajouter</button>
+          <button type="button" id="goalCancelBtn" class="btn-secondary hidden">Annuler</button>
         </form>
         <table class="data-table" id="goalsTable">
           <thead><tr><th>Objectif</th><th>Type</th><th>Cible</th><th>Progression</th><th></th></tr></thead>
