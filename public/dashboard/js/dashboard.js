@@ -33,30 +33,11 @@ function darkenHex(hex, factor = 0.78) {
 }
 
 function applyThemePrefs(prefs) {
-  document.body.classList.toggle('light-theme', prefs.mode === 'light');
-  document.getElementById('themeToggleIcon').textContent = prefs.mode === 'light' ? '☀️' : '🌙';
+  // Jour par défaut ; la nuit s'active avec le bouton lune/soleil
+  const night = prefs.mode === 'dark';
+  document.body.classList.toggle('dark-theme', night);
+  document.getElementById('themeToggleIcon').textContent = night ? '☀️' : '🌙';
   document.body.classList.toggle('sidebar-collapsed', !!prefs.sidebarCollapsed);
-
-  // Une seule couleur pilote à la fois : le mot "BOT", les icônes/accents, et une
-  // version très assombrie de cette même couleur pour le fond de page (pas les
-  // encadrés/cartes, qui restent sur --ink2/--track inchangés).
-  if (prefs.themeColor) {
-    document.body.style.setProperty('--brand-bot-color', prefs.themeColor);
-    document.body.style.setProperty('--brg-bright', prefs.themeColor);
-    document.body.style.setProperty('--ink', darkenHex(prefs.themeColor));
-  } else {
-    document.body.style.removeProperty('--brand-bot-color');
-    document.body.style.removeProperty('--brg-bright');
-    document.body.style.removeProperty('--ink');
-  }
-
-  const currentColor = prefs.themeColor || rgbStringToHex(getComputedStyle(document.body).getPropertyValue('--brg-bright'));
-  document.getElementById('colorCustomSwatch').style.background = currentColor;
-  document.getElementById('colorCustomHex').textContent = currentColor.toUpperCase();
-
-  document.querySelectorAll('.swatch:not(.swatch-reset)').forEach((el) => {
-    el.classList.toggle('selected', prefs.themeColor && el.dataset.color.toLowerCase() === prefs.themeColor.toLowerCase());
-  });
 }
 
 let themePrefs = loadThemePrefs();
@@ -69,7 +50,7 @@ document.getElementById('sidebarToggleBtn').addEventListener('click', () => {
 });
 
 document.getElementById('themeToggleBtn').addEventListener('click', () => {
-  themePrefs.mode = themePrefs.mode === 'light' ? 'dark' : 'light';
+  themePrefs.mode = themePrefs.mode === 'dark' ? 'light' : 'dark';
   saveThemePrefs(themePrefs);
   applyThemePrefs(themePrefs);
 });

@@ -3,30 +3,31 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Connexion — Dashboard Bot Twitch</title>
+<title>Connexion — AMBRI.BOT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/dashboard/css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/dashboard/css/app.css" />
 </head>
 <body class="login-body">
 
   <section class="login-hero">
-    <p class="hero-status"><span class="dot"></span> Bot en ligne</p>
-    <h1 class="hero-title">Bot <span>Twitch</span><br />Dashboard</h1>
-    <p class="hero-tagline">Pilote ta chaîne en un seul endroit : commandes, points, subathon et alertes en direct.</p>
+    <img class="hero-logo" src="/dashboard/img/logo-ab.png" alt="" />
+    <p class="hero-status"><span class="dot"></span> Le bot est en ligne</p>
+    <h1 class="hero-title">AMBRI.BOT</h1>
+    <p class="hero-tagline">Ton chat, tes alertes et ton subathon, réunis au même endroit.</p>
     <ul class="hero-features">
-      <li>Points &amp; Gamble configurables</li>
-      <li>Alertes follow / sub / cheer en direct</li>
-      <li>Subathon avec objectifs</li>
-      <li>Commandes vocales &amp; soundboard</li>
+      <li>Commandes</li>
+      <li>Alertes en direct</li>
+      <li>Subathon</li>
+      <li>Overlays OBS</li>
     </ul>
   </section>
 
   <section class="login-panel">
     <div class="login-box">
-      <p class="login-eyebrow">Accès restreint</p>
-      <h2>Se connecter</h2>
+      <h2>Bienvenue</h2>
+      <p class="hint">Entre ton mot de passe pour ouvrir le dashboard.</p>
       <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" />
       <button id="loginBtn">Entrer</button>
       <p id="error" class="error"></p>
