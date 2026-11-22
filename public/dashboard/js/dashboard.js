@@ -574,7 +574,7 @@ document.getElementById('cmdCancelBtn').addEventListener('click', () => {
   cmdResponseWrapper.classList.remove('hidden');
 });
 
-// ============ SETTINGS (points/gamble) ============
+// ============ SETTINGS ============
 let alertSoundUrls = { follow: null, sub: null, resub: null, giftsub: null, cheer: null };
 
 function renderAlertSoundRow(type) {
@@ -619,12 +619,6 @@ async function loadSettings() {
   const res = await fetch('/api/settings');
   const s = await res.json();
 
-  document.getElementById('pointsName').value = s.pointsName;
-  document.getElementById('pointsPerInterval').value = s.pointsPerInterval;
-  document.getElementById('intervalMinutes').value = s.intervalMinutes;
-  document.getElementById('gambleWinChance').value = s.gamble.winChance;
-  document.getElementById('gambleMinBet').value = s.gamble.minBet;
-  document.getElementById('gambleCooldown').value = s.gamble.cooldownSeconds;
 
   document.getElementById('followMessage').value = s.alerts.followMessage;
   document.getElementById('liveOnlineMessage').value = s.alerts.liveOnlineMessage ?? '';
@@ -675,25 +669,6 @@ async function loadSettings() {
   document.getElementById('discordEmbedColor').value = s.discord?.embedColor || '#2E9A5C';
   document.getElementById('discordEmbedFooter').value = s.discord?.embedFooter || '';
 }
-
-document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  await fetch('/api/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      pointsName: document.getElementById('pointsName').value,
-      pointsPerInterval: parseInt(document.getElementById('pointsPerInterval').value, 10),
-      intervalMinutes: parseInt(document.getElementById('intervalMinutes').value, 10),
-      gamble: {
-        winChance: parseInt(document.getElementById('gambleWinChance').value, 10),
-        minBet: parseInt(document.getElementById('gambleMinBet').value, 10),
-        cooldownSeconds: parseInt(document.getElementById('gambleCooldown').value, 10)
-      }
-    })
-  });
-  alert('Réglages enregistrés !');
-});
 
 document.getElementById('alertsForm').addEventListener('submit', async (e) => {
   e.preventDefault();

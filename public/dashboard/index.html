@@ -84,7 +84,6 @@
       <nav class="tabs">
         <p class="nav-group-label">Général</p>
         <button class="tab-btn active" data-tab="commands"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="tab-label">Commandes</span></button>
-        <button class="tab-btn" data-tab="points"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/></svg><span class="tab-label">Points &amp; Gamble</span></button>
         <button class="tab-btn" data-tab="extras"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4L4.2 8.7l5.4-.8z"/></svg><span class="tab-label">Extras</span></button>
         <p class="nav-group-label">Live &amp; Stream</p>
         <button class="tab-btn" data-tab="alerts"><svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="tab-label">Alertes</span></button>
@@ -161,29 +160,6 @@
     </section>
 
     <!-- === Points & Gamble === -->
-    <section id="tab-points" class="tab-content">
-      <div class="section-header">
-        <div class="section-icon">🎲</div>
-        <div>
-          <h2>Points & Gamble</h2>
-          <p class="section-desc">Configure la monnaie du chat, les gains passifs et les règles du pari.</p>
-        </div>
-      </div>
-      <form id="settingsForm" class="card">
-        <label>Nom de la monnaie <input id="pointsName" /></label>
-        <label>Points gagnés passivement <input id="pointsPerInterval" type="number" /></label>
-        <label>Toutes les X minutes <input id="intervalMinutes" type="number" /></label>
-
-        <h3>Gamble (pari)</h3>
-        <label>Chance de gagner (%) — ex: 40 = ratio 60/40, 30 = ratio 70/30
-          <input id="gambleWinChance" type="number" min="1" max="99" />
-        </label>
-        <label>Mise minimum <input id="gambleMinBet" type="number" /></label>
-        <label>Cooldown gamble (s) <input id="gambleCooldown" type="number" /></label>
-
-        <button type="submit">💾 Enregistrer les réglages</button>
-      </form>
-    </section>
 
     <!-- === Alertes === -->
     <section id="tab-alerts" class="tab-content">
