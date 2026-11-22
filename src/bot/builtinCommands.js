@@ -229,4 +229,7 @@ const builtins = {
   }
 };
 
+// Commandes supplémentaires (fun, infos, stats, citations, compteurs, utilitaires)
+Object.assign(builtins, require('./extraCommands').handlers);
+
 module.exports = builtins;

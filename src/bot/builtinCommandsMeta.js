@@ -122,6 +122,9 @@ const meta = {
   }
 };
 
+// Descriptions des commandes supplémentaires (définies avec leur code dans extraCommands.js)
+Object.assign(meta, require('./extraCommands').meta);
+
 /** Liste à plat, prête à être envoyée au dashboard. */
 function listBuiltinCommands() {
   return Object.entries(meta).map(([name, info]) => ({ name, ...info }));
